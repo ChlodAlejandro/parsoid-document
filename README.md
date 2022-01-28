@@ -8,7 +8,7 @@ ParsoidDocument is an ES6+ library which implements a Parsoid-compatible documen
 
 To be fully optimized, this should be implemented as a gadget and loaded through [mw.loader](https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/mw.loader). Since the Gadgets extension [does not support ES6](https://phabricator.wikimedia.org/T75714), however, it cannot yet be implemented as one on most wikis.
 
-## Usage
+## Installation
 As a developer, insert the following code in the initialization section of your userscript. **This is the only way to use the library on the English Wikipedia, and for most Wikimedia wikis.**
 ```js
 // The "await" is optional, but ensures that the script has loaded and run before proceeding.
@@ -30,6 +30,7 @@ If your userscript is bundled with Webpack, you can also install the [@chlodalej
 npm install @chlodalejandro/parsoid
 ```
 
+## Usage
 You can then access ParsoidDocument using the `ParsoidDocument` window global.
 ```js
 const parsoid = new ParsoidDocument();
