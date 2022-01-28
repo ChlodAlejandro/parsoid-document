@@ -1,0 +1,36 @@
+{
+  "name": "@chlodalejandro/parsoid",
+  "description": "A userscript library for easily handling Parsoid DOM trees. ",
+  "version": "1.0.0",
+  "main": "ParsoidDocument.js",
+  "types": "./ParsoidDocument.d.ts",
+  "files": [
+    "LICENSE",
+    "README.md",
+    "ParsoidDocument.js",
+    "ParsoidDocument.d.ts"
+  ],
+  "scripts": {
+    "test": "tsc test.ts --noEmit"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/ChlodAlejandro/parsoid-document.git"
+  },
+  "keywords": [
+    "mediawiki",
+    "parsoid",
+    "wikipedia",
+    "wikimedia"
+  ],
+  "author": "Chlod Alejandro <chlod@chlod.net>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ChlodAlejandro/parsoid-document/issues"
+  },
+  "homepage": "https://github.com/ChlodAlejandro/parsoid-document#readme",
+  "devDependencies": {
+    "types-mediawiki": "^1.2.0",
+    "typescript": "^4.5.5"
+  }
+}
