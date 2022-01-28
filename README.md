@@ -1,4 +1,7 @@
 # ParsoidDocument
+[![npm version](https://img.shields.io/npm/v/@chlodalejandro/parsoid.svg?style=flat-square)](https://www.npmjs.org/package/@chlodalejandro/parsoid)
+[![npm downloads](https://img.shields.io/npm/dm/@chlodalejandro/parsoid.svg?style=flat-square)](http://npm-stat.com/charts.html?package=@chlodalejandro/parsoid)
+
 *Originally from [User:Chlod/Scripts/ParsoidDocument](https://en.wikipedia.org/wiki/User:Chlod/Scripts/ParsoidDocument) on the English Wikipedia.*
 
 ParsoidDocument is an ES6+ library which implements a Parsoid-compatible document handler using an HTML5 IFrame. It is not a userscript, but is instead loaded by other userscripts. The IFrame contains the Parsoid document, which can then be modified using standard DOM functions. This is used to perform Parsoid-dependent operations in the browser without having to pull in the entirety of the VisualEditor codebase.
@@ -57,7 +60,5 @@ const parsoid = new MyParsoidHandler();
 // ...
 parsoid.findAllTransclusions();
 ```
-
-If your userscript involves Webpack.
 ## See also
 * [types-mediawiki](https://github.com/wikimedia-gadgets/types-mediawiki) – provides types for the MediaWiki global (`mw`).
