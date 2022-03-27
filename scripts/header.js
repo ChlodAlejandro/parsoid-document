@@ -1,5 +1,5 @@
 /*
- * Easy-to-use and extend ES6 ParsoidDocument class for managing Parsoid-compatible HTML
+ * Easy-to-use and extend ES9+ ParsoidDocument class for managing Parsoid-compatible HTML
  * by placing the data in an IFrame, making it accessible via DOM functions.
  *
  * Fires "parsoidDocument:load" event on load.
