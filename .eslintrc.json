@@ -1,0 +1,48 @@
+{
+    "root": true,
+    "parser": "@typescript-eslint/parser",
+    "env": {
+        "es6": true,
+        "node": false,
+        "browser": true
+    },
+    "plugins": [
+        "jsdoc"
+    ],
+    "extends": [
+        "plugin:@typescript-eslint/recommended",
+        "plugin:compat/recommended",
+        "plugin:jsdoc/recommended",
+        "wikimedia/client-es6",
+        "wikimedia/jquery",
+        "wikimedia/mediawiki"
+    ],
+    "parserOptions": {
+        "ecmaVersion": 6,
+        "ecmaFeatures": {
+            "impliedStrict": true
+        }
+    },
+    "rules": {
+        "@typescript-eslint/no-explicit-any": "off",
+        "jsdoc/require-returns-type": "off",
+        "jsdoc/require-param-type": "off",
+        "jsdoc/require-jsdoc": [
+            "error",
+            {
+                "contexts":
+                [
+                    "ClassDeclaration",
+                    "ClassProperty",
+                    "FunctionDeclaration",
+                    "MethodDefinition"
+                ]
+            }
+        ],
+        "compat/compat": ["error", "cover 95% and supports fetch, not IE 11"],
+        "no-unused-vars": "warn",
+        "no-undef": "off",
+        "eqeqeq": [ "warn", "smart" ]
+    },
+    "ignorePatterns": [ "*.d.ts" ]
+}

@@ -4,9 +4,9 @@
 
 *Originally from [User:Chlod/Scripts/ParsoidDocument](https://en.wikipedia.org/wiki/User:Chlod/Scripts/ParsoidDocument) on the English Wikipedia.*
 
-ParsoidDocument is an ES6+ library which implements a Parsoid-compatible document handler using an HTML5 IFrame. It is not a userscript, but is instead loaded by other userscripts. The IFrame contains the Parsoid document, which can then be modified using standard DOM functions. This is used to perform Parsoid-dependent operations in the browser without having to pull in the entirety of the VisualEditor codebase.
+ParsoidDocument is an ES9+ library which implements a Parsoid-compatible document handler using an HTML5 IFrame. It is not a userscript, but is instead loaded by other userscripts. The IFrame contains the Parsoid document, which can then be modified using standard DOM functions. This is used to perform Parsoid-dependent operations in the browser without having to pull in the entirety of the VisualEditor codebase.
 
-To be fully optimized, this should be implemented as a gadget and loaded through [mw.loader](https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/mw.loader). Since the Gadgets extension [does not support ES6](https://phabricator.wikimedia.org/T75714), however, it cannot yet be implemented as one on most wikis.
+To be fully optimized, this should be implemented as a gadget and loaded through [mw.loader](https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/mw.loader). Since the Gadgets extension [does not support ES6+](https://phabricator.wikimedia.org/T75714), however, it cannot yet be implemented as one on most wikis.
 
 ## Installation
 As a developer, insert the following code in the initialization section of your userscript. **This is the only way to use the library on the English Wikipedia, and for most Wikimedia wikis.**
@@ -32,12 +32,13 @@ npm install @chlodalejandro/parsoid
 
 ## Usage
 You can then access ParsoidDocument using the `ParsoidDocument` window global.
+
 ```js
 const parsoid = new ParsoidDocument();
 // You can append the frame anywhere; it will never be visible to the user.
 document.body.appendChild(parsoid.buildFrame());
 
-parsoid.loadFrame("User:Chlod/Scripts/ParsoidDocument");
+parsoid.loadPage("User:Chlod/Scripts/ParsoidDocument");
 parsoid.document.body.classList.contains("parsoid-body"); // true
 
 // Prints the "data-mw" attribute of all transclusions.

@@ -1,0 +1,24 @@
+{
+    "compilerOptions": {
+        "target": "ES2018",
+        "lib": ["dom", "ES2018"],
+        "outDir": "./build",
+        "declaration": true,
+        "noImplicitAny": true,
+        "esModuleInterop": true,
+        "module": "None",
+        "moduleResolution": "Node",
+        "types": [
+            "node",
+            "jest",
+            "types-mediawiki",
+            "@types/jest-environment-puppeteer",
+            "@types/expect-puppeteer"
+        ]
+    },
+    "include": [
+        "./src/**/*.ts",
+        "./node_modules/types-mediawiki/**/*",
+        "./types/**/*"
+    ]
+}
