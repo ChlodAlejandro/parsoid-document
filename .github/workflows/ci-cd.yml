@@ -1,0 +1,34 @@
+name: CI/CD
+
+on:
+    push:
+    pull_request:
+
+jobs:
+    audit:
+        name: Build, Audit, Test
+        runs-on: ubuntu-latest
+        env:
+            NODE_ENV: development
+
+        steps:
+            -   name: Checkout code
+                uses: actions/checkout@v2
+
+            -   name: Setup Node
+                uses: actions/setup-node@v2
+                with:
+                    node-version: '16.x'
+                    registry-url: 'https://registry.npmjs.org'
+
+            -   name: Install dependencies
+                run: npm ci
+
+            -   name: Perform audit
+                uses: oke-py/npm-audit-action@v1.8.3
+                with:
+                    audit_level: moderate
+                    github_token: ${{ secrets.GITHUB_TOKEN }}
+
+            -   name: Perform tests
+                run: npm test
