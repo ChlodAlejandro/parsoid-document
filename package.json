@@ -1,11 +1,10 @@
 {
-    "private": true,
     "name": "@chlodalejandro/parsoid",
     "description": "A userscript library for easily handling Parsoid DOM trees. ",
     "version": "2.0.0-rc1",
     "main": "build/ParsoidDocument.module.js",
     "browser": "build/ParsoidDocument.js",
-    "types": "build/ParsoidDocument.d.ts",
+    "types": "build/ParsoidDocument.module.d.ts",
     "files": [
         "LICENSE",
         "README.md",
