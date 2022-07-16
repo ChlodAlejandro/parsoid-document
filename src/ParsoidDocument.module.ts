@@ -23,30 +23,22 @@ class ParsoidTransclusionTemplateNode {
 
 	/**
 	 * The HTMLElement that contains this template.
-	 *
-	 * @protected
 	 */
-	protected readonly originalElement: HTMLElement;
+	public readonly originalElement: HTMLElement;
 	/**
 	 * This template's data. This is the value for `template` for this specific "part" in the
 	 * `data-mw`.
-	 *
-	 * @protected
 	 */
-	protected readonly data: any;
+	public readonly data: any;
 	/**
 	 * The `i` property of this specific node.
-	 *
-	 * @protected
 	 */
-	protected readonly i: number;
+	public readonly i: number;
 
 	/**
 	 * Whether to automatically save parameter and target changes or not.
-	 *
-	 * @protected
 	 */
-	protected readonly autosave: boolean;
+	public readonly autosave: boolean;
 
 	/**
 	 * Create a new ParsoidTransclusionTemplateNode.
