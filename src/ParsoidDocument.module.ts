@@ -24,29 +24,29 @@ class ParsoidTransclusionTemplateNode {
 	/**
 	 * The HTMLElement that contains this template.
 	 *
-	 * @private
+	 * @protected
 	 */
-	private readonly originalElement: HTMLElement;
+	protected readonly originalElement: HTMLElement;
 	/**
 	 * This template's data. This is the value for `template` for this specific "part" in the
 	 * `data-mw`.
 	 *
-	 * @private
+	 * @protected
 	 */
-	private readonly data: any;
+	protected readonly data: any;
 	/**
 	 * The `i` property of this specific node.
 	 *
-	 * @private
+	 * @protected
 	 */
-	private readonly i: number;
+	protected readonly i: number;
 
 	/**
 	 * Whether to automatically save parameter and target changes or not.
 	 *
-	 * @private
+	 * @protected
 	 */
-	private readonly autosave: boolean;
+	protected readonly autosave: boolean;
 
 	/**
 	 * Create a new ParsoidTransclusionTemplateNode.
@@ -172,47 +172,47 @@ class ParsoidDocument extends EventTarget {
 	/**
 	 * The {@link Document} object of the iframe.
 	 *
-	 * @private
+	 * @protected
 	 */
-	private document: Document;
+	protected document: Document;
 	/**
 	 * The {@link JQuery} object of the iframe.
 	 *
-	 * @private
+	 * @protected
 	 */
-	private $document: JQuery<Document>;
+	protected $document: JQuery<Document>;
 	/**
 	 * The frame element used by this ParsoidDocument instance.
 	 *
-	 * @private
+	 * @protected
 	 */
-	private iframe: HTMLIFrameElement;
+	protected iframe: HTMLIFrameElement;
 	/**
 	 * The page currently loaded.
 	 *
 	 * @type {string}
 	 */
-	private page: string;
+	protected page: string;
 	/**
 	 * The ETag of the loaded Parsoid document.
 	 *
-	 * @private
+	 * @protected
 	 */
-	private etag: string;
+	protected etag: string;
 	/**
 	 * `true` if the page exists on the wiki.
 	 *
-	 * @private
+	 * @protected
 	 */
-	private fromExisting: boolean;
+	protected fromExisting: boolean;
 
 	/**
 	 * A set of element arrays indexed by their MediaWiki RDFa type. For example, this array
 	 * may include the key "Transclusion" from the RDFa type "mw:Transclusion".
 	 *
-	 * @private
+	 * @protected
 	 */
-	private elementIndex: { [key: string]: HTMLElement[] };
+	protected elementIndex: { [key: string]: HTMLElement[] };
 
 	/**
 	 * Create a new ParsoidDocument instance from a page on-wiki.
@@ -307,7 +307,7 @@ class ParsoidDocument extends EventTarget {
 			 * The document of this ParsoidDocument's IFrame.
 			 *
 			 * @type {Document}
-			 * @private
+			 * @protected
 			 */
 			this.document = this.iframe.contentWindow.document;
 			this.$document = $( this.document );
