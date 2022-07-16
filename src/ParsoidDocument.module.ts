@@ -283,7 +283,7 @@ class ParsoidDocument extends EventTarget {
 	/**
 	 * Create a new ParsoidDocument instance.
 	 */
-	private constructor() {
+	protected constructor() {
 		super();
 
 		this.iframe = document.createElement( 'iframe' );
