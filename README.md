@@ -35,8 +35,6 @@ You can then access ParsoidDocument using the `ParsoidDocument` window global.
 
 ```js
 const parsoid = new ParsoidDocument();
-// You can append the frame anywhere; it will never be visible to the user.
-document.body.appendChild(parsoid.buildFrame());
 
 parsoid.loadPage("User:Chlod/Scripts/ParsoidDocument");
 parsoid.document.body.classList.contains("parsoid-body"); // true
