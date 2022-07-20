@@ -38,7 +38,7 @@ jobs:
                 --out ../docs \
                 --excludeExternals true \
                 --cleanOutputDir false \
-                src/Deputy.ts
+                src/ParsoidDocument.module.ts
 
       # Commit
       -   name: Commit new documentation
