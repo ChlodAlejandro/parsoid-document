@@ -1,7 +1,10 @@
-// eslint-disable-next-line no-unused-vars
-declare interface Window {
-	testDocuments: Record<string, any>;
-	ParsoidDocument: any;
+import ParsoidDocument from '../src/ParsoidDocument.module';
+
+declare global {
+	interface Window {
+		testDocuments: Record<string, ParsoidDocument>;
+		ParsoidDocument: typeof ParsoidDocument;
+	}
 }
 
 jest.setTimeout( 60000 );
@@ -10,7 +13,7 @@ describe( 'English Wikipedia', () => {
 
 	beforeAll( async () => {
 		await page.goto( 'https://en.wikipedia.org/wiki/Wikipedia:Sandbox' );
-		await page.addScriptTag( { url: 'http://localhost:45000/ParsoidDocument.js' } );
+		await page.addScriptTag( { path: './build/ParsoidDocument.js' } );
 
 		jest.setTimeout( 10000 );
 	} );
@@ -39,7 +42,7 @@ describe( 'English Wikipedia', () => {
 					mw.config.get( 'wgPageName' )
 				);
 
-				return doc.document != null;
+				return doc.getDocument() != null;
 			} ) ).toBe( true );
 			expect( await page.evaluate( () => {
 				return window.testDocuments.default.isFromExisting();
@@ -53,7 +56,7 @@ describe( 'English Wikipedia', () => {
 					Math.random().toString().replace( '.', '' )
 				);
 
-				return doc.document != null;
+				return doc.getDocument() != null;
 			} ) ).toBe( true );
 			expect( await page.evaluate( () => {
 				return window.testDocuments.missing.isFromExisting();
@@ -67,7 +70,7 @@ describe( 'English Wikipedia', () => {
 					Math.random().toString().replace( '.', '' )
 				);
 
-				return doc.document != null;
+				return doc.getDocument() != null;
 			} ) ).toBe( true );
 		} );
 
@@ -78,7 +81,7 @@ describe( 'English Wikipedia', () => {
 					Math.random().toString().replace( '.', '' )
 				);
 
-				return doc.document != null;
+				return doc.getDocument() != null;
 			} ) ).toBe( true );
 		} );
 
@@ -91,7 +94,7 @@ describe( 'English Wikipedia', () => {
 						'{{ T | X1 | foo = 1 | bar = 2 }}{{ X1 | foo = 1 | bar = 2 }}'
 					);
 
-				return doc.document != null;
+				return doc.getDocument() != null;
 			} ) ).toBe( true );
 		} );
 
@@ -156,7 +159,7 @@ describe( 'English Wikipedia', () => {
 
 				const elP = document.createElement( 'p' );
 				elP.innerText = 'This is test content!';
-				doc.document.body.appendChild( elP );
+				doc.getDocument().body.appendChild( elP );
 			} );
 
 			await expect( await page.evaluate( async () => {
@@ -171,13 +174,52 @@ describe( 'English Wikipedia', () => {
 
 				const elP = document.createElement( 'p' );
 				elP.innerText = 'This is test content!';
-				doc.document.body.appendChild( elP );
+				doc.getDocument().body.appendChild( elP );
 			} );
 
 			await expect( ( await page.evaluate( async () => {
 				const doc = window.testDocuments.blank;
 				return doc.toWikitext();
 			} ) ).trim() ).toBe( 'This is test content!' );
+		} );
+
+	} );
+
+	describe( 'MutationObserver-based index rebuilding', () => {
+
+		test( 'Mutate existing page document', async () => {
+			await page.evaluate( () => {
+				const doc = window.testDocuments.default;
+
+				// Modify Parsoid DOM with standard DOM manipulation functions.
+				const elSpan = doc.getDocument().createElement( 'span' );
+				elSpan.setAttribute( 'about', 'N' + Math.floor( Math.random() * 100 ) );
+				elSpan.setAttribute( 'typeof', 'mw:Transclusion' );
+				elSpan.setAttribute( 'data-mw', JSON.stringify( {
+					parts: [ {
+						template: {
+							target: { wt: 'T\n', href: './Template:T' },
+							params: {
+								foo: {
+									wt: '1'
+								},
+								bar: {
+									wt: '1'
+								}
+							},
+							i: 0
+						}
+					} ]
+				} ) );
+				( window as any ).test0 = elSpan;
+
+				doc.getDocument().body.appendChild( elSpan );
+			} );
+
+			await expect( await page.evaluate( async () => {
+				const doc = window.testDocuments.default;
+				return doc.findTemplate( 'T' ) != null;
+			} ) ).toBe( true );
 		} );
 
 	} );

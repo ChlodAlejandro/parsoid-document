@@ -180,6 +180,12 @@ class ParsoidDocument extends EventTarget {
 	 */
 	protected iframe: HTMLIFrameElement;
 	/**
+	 * A MutationObserver that watches the document for DOM changes.
+	 *
+	 * @protected
+	 */
+	protected observer: MutationObserver;
+	/**
 	 * The page currently loaded.
 	 *
 	 * @type {string}
@@ -218,7 +224,7 @@ class ParsoidDocument extends EventTarget {
 	 */
 	static async fromPage(
 		page: string,
-		options: Parameters<ParsoidDocument['loadPage']>[1]
+		options: Parameters<ParsoidDocument['loadPage']>[1] = {}
 	): Promise<ParsoidDocument> {
 		const doc = new ParsoidDocument();
 		await doc.loadPage( page, options );
@@ -241,7 +247,7 @@ class ParsoidDocument extends EventTarget {
 		const doc = new ParsoidDocument();
 		await doc.loadHTML( page, wrap ? ParsoidDocument.blankDocument : html );
 		if ( wrap ) {
-			doc.document.body.innerHTML = html;
+			doc.document.getElementsByTagName( 'body' )[ 0 ].innerHTML = html;
 		}
 
 		return doc;
@@ -305,6 +311,22 @@ class ParsoidDocument extends EventTarget {
 			this.$document = $( this.document );
 			this.setupJquery( this.$document );
 			this.buildIndex();
+
+			if ( this.observer ) {
+				// This very much assumes that the MutationObserver is still connected.
+				// Yes, this is quite an assumption, but should not be a problem during normal use.
+				// If only MutationObserver had a `.connected` field...
+				this.observer.disconnect();
+			}
+			this.observer = new MutationObserver( () => {
+				this.buildIndex();
+			} );
+			this.observer.observe( this.document.getElementsByTagName( 'body' )[ 0 ], {
+				// Listen for ALL DOM mutations.
+				attributes: true,
+				childList: true,
+				subtree: true
+			} );
 		} );
 
 		document.getElementsByTagName( 'body' )[ 0 ].appendChild( this.iframe );

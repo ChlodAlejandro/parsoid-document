@@ -1,6 +1,6 @@
 module.exports = {
-	server: {
-		command: 'http-server build/ -p 45000 -d -i -c-1 --cors --no-dotfiles',
-		port: 45000
+	launch: {
+		headless: process.env.CI != null || process.env.HEADLESS !== '0',
+		product: process.env.PUPPETEER_PRODUCT || 'chrome'
 	}
 };

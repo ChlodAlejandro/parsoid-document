@@ -8,6 +8,11 @@ jobs:
     audit:
         name: Build, Audit, Test
         runs-on: ubuntu-latest
+        strategy:
+            max-parallel: 1
+            fail-fast: false
+            matrix:
+                product: [ 'chrome', 'firefox' ]
         env:
             NODE_ENV: development
 
@@ -23,6 +28,8 @@ jobs:
 
             -   name: Install dependencies
                 run: npm ci
+                env:
+                    PUPPETEER_PRODUCT: ${{ matrix.product }}
 
             -   name: Perform audit
                 uses: oke-py/npm-audit-action@v1.8.3
@@ -32,3 +39,5 @@ jobs:
 
             -   name: Perform tests
                 run: npm test
+                env:
+                    PUPPETEER_PRODUCT: ${{ matrix.product }}
