@@ -16,6 +16,19 @@ function encodeAPIComponent( text: string ): string {
 }
 
 /**
+ * Clones a regular expression.
+ *
+ * @param regex The regular expression to clone.
+ * @return A new regular expression object.
+ */
+function cloneRegex( regex: RegExp ): RegExp {
+	return new RegExp(
+		regex.source,
+		regex.flags
+	);
+}
+
+/**
  * A class denoting a transclusion template node (a transcluded template, barring any included
  * text or inline parameters) inside an element with [typeof="mw:Transclusion"].
  */
@@ -603,7 +616,7 @@ class ParsoidDocument extends EventTarget {
 						hrefMode ? 'href' : 'wt'
 					];
 					if ( typeof templateName !== 'string' ) {
-						return templateName.test( compareTarget.trim() );
+						return cloneRegex( templateName ).test( compareTarget.trim() );
 					} else {
 						return templateName === compareTarget.trim();
 					}
