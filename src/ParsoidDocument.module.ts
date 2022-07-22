@@ -367,7 +367,7 @@ class ParsoidDocument extends EventTarget {
 				return mwData.parts.map( ( part: any ) => {
 					if ( part.template ) {
 						return new ParsoidTransclusionTemplateNode(
-							rootNode, part.template, part.i
+							rootNode, part.template, part.template.i
 						);
 					} else {
 						return part;
