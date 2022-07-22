@@ -135,7 +135,7 @@ class ParsoidTransclusionTemplateNode {
 
 		const existingData = JSON.parse( this.originalElement.getAttribute( 'data-mw' ) );
 		existingData.parts.find(
-			( part: any ) => part.i === this.i
+			( part: any ) => part.template?.i === this.i
 		).template = this.data;
 		this.originalElement.setAttribute( 'data-mw', JSON.stringify( existingData ) );
 	}
@@ -611,9 +611,9 @@ class ParsoidDocument extends EventTarget {
 			);
 
 			if ( matching.length > 0 ) {
-				return matching.map( ( part: { i: number, template: string } ) => {
+				return matching.map( ( part: any ) => {
 					return new ParsoidTransclusionTemplateNode(
-						node, part.template, part.i
+						node, part.template, part.template.i
 					);
 				} );
 			} else {
