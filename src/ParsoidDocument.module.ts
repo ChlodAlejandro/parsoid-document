@@ -599,8 +599,8 @@ class ParsoidDocument extends EventTarget {
 			throw new Error( "Can't perform operations without a loaded page." );
 		}
 
-		const templates = this.elementIndex.Transclusion;
-		if ( templates.length === 0 ) {
+		const templates = this.elementIndex?.Transclusion;
+		if ( templates == null || templates.length === 0 ) {
 			return [];
 		}
 
