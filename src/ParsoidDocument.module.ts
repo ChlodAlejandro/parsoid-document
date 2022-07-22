@@ -551,7 +551,7 @@ class ParsoidDocument extends EventTarget {
 	async reload() {
 		const page = this.page;
 		this.page = undefined;
-		return this.loadPage( page );
+		return this.loadPage( page, { reload: true } );
 	}
 
 	/**
