@@ -117,13 +117,23 @@ class ParsoidTransclusionTemplateNode {
 	}
 
 	/**
+	 * Checks if a template has a parameter.
+	 *
+	 * @param {string} key The key of the parameter to check.
+	 * @return {boolean} `true` if the template has the given parameter
+	 */
+	hasParameter( key: string ): boolean {
+		return this.data.params[ key ] != null;
+	}
+
+	/**
 	 * Gets the value of a parameter.
 	 *
 	 * @param {string} key The key of the parameter to check.
 	 * @return {string} The parameter value.
 	 */
 	getParameter( key: string ): string {
-		return this.data.params[ key ].wt;
+		return this.data.params[ key ]?.wt;
 	}
 
 	/**
