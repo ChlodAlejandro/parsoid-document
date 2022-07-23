@@ -127,13 +127,34 @@ class ParsoidTransclusionTemplateNode {
 	}
 
 	/**
-	 * Sets the value for a specific parameter.
+	 * Sets the value for a specific parameter. If `value` is null or undefined,
+	 * the parameter is removed.
 	 *
 	 * @param {string} key The parameter key to set.
 	 * @param {string} value The new value of the parameter.
 	 */
 	setParameter( key: string, value: string ): void {
-		this.data.params[ key ] = { wt: value };
+		if ( value != null ) {
+			this.data.params[ key ] = { wt: value };
+
+			if ( this.autosave ) {
+				this.save();
+			}
+		} else {
+			this.removeParameter( key );
+		}
+	}
+
+	/**
+	 * Removes a parameter from the template.
+	 *
+	 * @param key The parameter key to remove.
+	 */
+	removeParameter( key: string ): void {
+		if ( this.data.params[ key ] != null ) {
+			delete this.data.params[ key ];
+		}
+
 		if ( this.autosave ) {
 			this.save();
 		}
