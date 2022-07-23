@@ -15,9 +15,9 @@ TARGET_VERSION="$PACKAGE_VERSION-$HASH"
 CURRENT_LATEST=$(npm dist-tag @chlodalejandro/parsoid@latest | xargs | sed 's/latest: //')
 
 npm version "$TARGET_VERSION"
-npm publish --dry-run
+npm publish
 npm dist-tag add "$PACKAGE_NAME@$CURRENT_LATEST" latest
 git push
-git push origin "tags/$TARGET_VERSION"
+git push origin "tags/v$TARGET_VERSION"
 
 set +euxo pipefail
