@@ -42,7 +42,10 @@
         "compat/compat": [ "error", "cover 95% and supports fetch, not IE 11" ],
         "no-unused-vars": "warn",
         "no-undef": "off",
-        "eqeqeq": [ "warn", "smart" ]
+        "eqeqeq": [ "warn", "smart" ],
+
+        "no-use-before-define": "off",
+        "@typescript-eslint/no-use-before-define": "error"
     },
     "ignorePatterns": [ "*.d.ts" ]
 }

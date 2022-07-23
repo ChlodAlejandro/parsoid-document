@@ -35,6 +35,10 @@ function cloneRegex( regex: RegExp ): RegExp {
 class ParsoidTransclusionTemplateNode {
 
 	/**
+	 * The ParsoidDocument handling this node.
+	 */
+	public readonly parsoidDocument: ParsoidDocument;
+	/**
 	 * The HTMLElement that contains this template.
 	 */
 	public readonly originalElement: HTMLElement;
@@ -56,6 +60,8 @@ class ParsoidTransclusionTemplateNode {
 	/**
 	 * Create a new ParsoidTransclusionTemplateNode.
 	 *
+	 * @param {ParsoidDocument} parsoidDocument
+	 *     The document handling this transclusion node.
 	 * @param {HTMLElement} originalElement
 	 *     The original element where the `data-mw` of this node is found.
 	 * @param {*} data
@@ -65,7 +71,14 @@ class ParsoidTransclusionTemplateNode {
 	 * @param {boolean} autosave
 	 *     Whether to automatically save parameter and target changes or not.
 	 */
-	constructor( originalElement: HTMLElement, data: any, i: number, autosave = true ) {
+	constructor(
+		parsoidDocument: ParsoidDocument,
+		originalElement: HTMLElement,
+		data: any,
+		i: number,
+		autosave = true
+	) {
+		this.parsoidDocument = parsoidDocument;
 		this.originalElement = originalElement;
 		this.data = data;
 		this.i = i;
@@ -161,6 +174,7 @@ class ParsoidTransclusionTemplateNode {
  */
 class ParsoidDocument extends EventTarget {
 
+	static readonly Node: typeof ParsoidTransclusionTemplateNode = ParsoidTransclusionTemplateNode;
 	/**
 	 * A blank Parsoid document, with a section 0.
 	 *
@@ -380,7 +394,7 @@ class ParsoidDocument extends EventTarget {
 				return mwData.parts.map( ( part: any ) => {
 					if ( part.template ) {
 						return new ParsoidTransclusionTemplateNode(
-							rootNode, part.template, part.template.i
+							this, rootNode, part.template, part.template.i
 						);
 					} else {
 						return part;
@@ -626,7 +640,7 @@ class ParsoidDocument extends EventTarget {
 			if ( matching.length > 0 ) {
 				return matching.map( ( part: any ) => {
 					return new ParsoidTransclusionTemplateNode(
-						node, part.template, part.template.i
+						this, node, part.template, part.template.i
 					);
 				} );
 			} else {
