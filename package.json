@@ -1,7 +1,7 @@
 {
     "name": "@chlodalejandro/parsoid",
     "description": "A userscript library for easily handling Parsoid DOM trees. ",
-    "version": "2.0.0-7a2b52f",
+    "version": "2.0.0-695c6aa",
     "main": "build/ParsoidDocument.module.js",
     "browser": "build/ParsoidDocument.js",
     "types": "build/ParsoidDocument.module.d.ts",
