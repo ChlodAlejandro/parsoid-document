@@ -600,10 +600,29 @@ class ParsoidDocument extends EventTarget {
 	}
 
 	/**
-	 * Clears the frame for a future reload.
+	 * Clears the frame for a future reload. This will later permit `loadPage` and
+	 * other related functions to run without the `reload` option.
 	 */
 	reset() {
+		// Reset the page
 		this.page = undefined;
+		// Reset the element index
+		this.elementIndex = undefined;
+
+		// Reset DOM-related fields
+		this.document = undefined;
+		this.$document = undefined;
+		this.etag = undefined;
+		this.fromExisting = undefined;
+
+		// Disconnect the mutation observer
+		this.observer.disconnect();
+		this.observer = undefined;
+
+		// Reset the IFrame
+		this.iframe.src = 'about:blank';
+
+		// By this point, this whole thing should be a clean state.
 	}
 
 	/**
