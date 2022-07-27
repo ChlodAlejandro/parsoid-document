@@ -183,6 +183,51 @@ describe( 'English Wikipedia', () => {
 			} ) ).trim() ).toBe( 'This is test content!' );
 		} );
 
+		test( 'Template insertion from blank page', async () => {
+			await expect( ( await page.evaluate( async () => {
+				const doc = await window.ParsoidDocument.fromBlank( 'Wikipedia:Sandbox' );
+
+				const elSpan = document.createElement( 'span' );
+				elSpan.setAttribute( 'typeof', 'mw:Transclusion' );
+				elSpan.setAttribute( 'data-mw', JSON.stringify( {
+					parts: [
+						{
+							template: {
+								target: { wt: 'X1', href: './Template:X1' },
+								params: {
+									foo: {
+										wt: 'bar'
+									},
+									baz: {
+										wt: 'qux'
+									}
+								},
+								i: 0
+							}
+						},
+						'text',
+						{
+							template: {
+								target: { wt: 'X2', href: './Template:X2' },
+								params: {
+									foo: {
+										wt: 'bar'
+									},
+									baz: {
+										wt: 'qux'
+									}
+								},
+								i: 2
+							}
+						}
+					]
+				} ) );
+				doc.getDocument().body.appendChild( elSpan );
+
+				return doc.toWikitext();
+			} ) ).trim() ).toBe( '{{X1|foo=bar|baz=qux}}text{{X2|foo=bar|baz=qux}}' );
+		} );
+
 	} );
 
 	describe( 'MutationObserver-based index rebuilding', () => {
