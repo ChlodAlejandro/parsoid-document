@@ -114,10 +114,18 @@ class ParsoidTransclusionTemplateNode {
 		autosave?: boolean
 	): ParsoidTransclusionTemplateNode {
 		const el = document.getDocument().createElement( 'span' );
+
+		const target: ParsoidTransclusionTemplateInterface['target'] = { wt: template };
+		if ( mw.Title ) {
+			// If `mediawiki.Title` is loaded, use it.
+			target.href = './' + new mw.Title(
+				target.wt,
+				mw.config.get( 'wgNamespaceIds' ).template
+			).getPrefixedDb();
+		}
+
 		const data = {
-			target: {
-				wt: template
-			},
+			target,
 			params: <Record<string, { wt: string }>>{},
 			i: 0
 		};
