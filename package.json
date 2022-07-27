@@ -16,7 +16,7 @@
         "build": "node scripts/build.js",
         "test": "npm run build && jest",
         "prepack": "npm run build",
-        "prepublish": "npm run test"
+        "prepublishOnly": "npm run test"
     },
     "repository": {
         "type": "git",
