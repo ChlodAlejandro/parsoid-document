@@ -83,7 +83,7 @@ class ParsoidTransclusionTemplateNode {
 	 * This template's data. This is the value for `template` for this specific "part" in the
 	 * `data-mw`.
 	 */
-	protected readonly data: ParsoidTransclusionTemplateInterface;
+	public readonly data: ParsoidTransclusionTemplateInterface;
 	/**
 	 * The `i` property of this specific node.
 	 */
