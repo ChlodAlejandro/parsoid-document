@@ -74,11 +74,11 @@ class ParsoidTransclusionTemplateNode {
 	/**
 	 * The ParsoidDocument handling this node.
 	 */
-	protected readonly parsoidDocument: ParsoidDocument;
+	public readonly parsoidDocument: ParsoidDocument;
 	/**
 	 * The HTMLElement that contains this template.
 	 */
-	protected readonly element: HTMLElement;
+	public readonly element: HTMLElement;
 	/**
 	 * This template's data. This is the value for `template` for this specific "part" in the
 	 * `data-mw`.
@@ -87,7 +87,7 @@ class ParsoidTransclusionTemplateNode {
 	/**
 	 * The `i` property of this specific node.
 	 */
-	protected readonly i: number;
+	public readonly i: number;
 
 	/**
 	 * Whether to automatically save parameter and target changes or not.
@@ -97,7 +97,7 @@ class ParsoidTransclusionTemplateNode {
 	/**
 	 * Creates a new ParsoidTransclusionTemplateNode. Can be used later on to add a template
 	 * into wikitext. To have this node show up in wikitext, append the node's element (using
-	 * {@link ParsoidTransclusionTemplateNode.getElement()}) to the document of a ParsoidDocument.
+	 * {@link ParsoidTransclusionTemplateNode.element}) to the document of a ParsoidDocument.
 	 *
 	 * @param document The document used to generate this node.
 	 * @param template The template to create. If you wish to generate wikitext as a block-type
@@ -166,20 +166,6 @@ class ParsoidTransclusionTemplateNode {
 		this.data = data;
 		this.i = i;
 		this.autosave = autosave;
-	}
-
-	/**
-	 * @return The ParsoidDocument of this node.
-	 */
-	getParsoidDocument(): ParsoidDocument {
-		return this.parsoidDocument;
-	}
-
-	/**
-	 * @return The element that this node is saved to.
-	 */
-	getElement(): HTMLElement {
-		return this.element;
 	}
 
 	/**
