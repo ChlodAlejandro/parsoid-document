@@ -151,7 +151,7 @@ describe( 'English Wikipedia', () => {
 
 	} );
 
-	describe( 'Parsoid direct DOM manipulation tests', () => {
+	describe( 'Parsoid document manipulation tests', () => {
 
 		test( 'Mutate existing page document', async () => {
 			await page.evaluate( () => {
@@ -159,7 +159,7 @@ describe( 'English Wikipedia', () => {
 
 				const elP = document.createElement( 'p' );
 				elP.innerText = 'This is test content!';
-				doc.getDocument().body.appendChild( elP );
+				doc.getSection( 0 ).appendChild( elP );
 			} );
 
 			await expect( await page.evaluate( async () => {
@@ -174,7 +174,7 @@ describe( 'English Wikipedia', () => {
 
 				const elP = document.createElement( 'p' );
 				elP.innerText = 'This is test content!';
-				doc.getDocument().body.appendChild( elP );
+				doc.getSection( 0 ).appendChild( elP );
 			} );
 
 			await expect( ( await page.evaluate( async () => {
@@ -183,7 +183,30 @@ describe( 'English Wikipedia', () => {
 			} ) ).trim() ).toBe( 'This is test content!' );
 		} );
 
-		test( 'Template insertion from blank page', async () => {
+		test( 'Template insertion from constructed node', async () => {
+			await expect( ( await page.evaluate( async () => {
+				const doc = await window.ParsoidDocument.fromBlank( 'Wikipedia:Sandbox' );
+
+				const node1 = await window.ParsoidDocument.Node.fromNew(
+					doc, 'X1', {
+						foo: 'bar',
+						baz: 'qux'
+					}
+				);
+				const node2 = await window.ParsoidDocument.Node.fromNew(
+					doc, 'X2', {
+						foo: 'bar',
+						baz: 'qux'
+					}
+				);
+				doc.getSection( 0 ).appendChild( node1.getElement() );
+				node1.getElement().insertAdjacentElement( 'beforebegin', node2.getElement() );
+
+				return doc.toWikitext();
+			} ) ).trim() ).toBe( '{{X2|foo=bar|baz=qux}}{{X1|foo=bar|baz=qux}}' );
+		} );
+
+		test( 'Template insertion from document element', async () => {
 			await expect( ( await page.evaluate( async () => {
 				const doc = await window.ParsoidDocument.fromBlank( 'Wikipedia:Sandbox' );
 
@@ -222,10 +245,42 @@ describe( 'English Wikipedia', () => {
 						}
 					]
 				} ) );
-				doc.getDocument().body.appendChild( elSpan );
+				doc.getSection( 0 ).appendChild( elSpan );
 
 				return doc.toWikitext();
 			} ) ).trim() ).toBe( '{{X1|foo=bar|baz=qux}}text{{X2|foo=bar|baz=qux}}' );
+		} );
+
+		test( 'Template destruction', async () => {
+			await expect( ( await page.evaluate( async () => {
+				const doc = await window.ParsoidDocument.fromWikitext(
+					'Wikipedia:Sandbox',
+					'{{collapse top}}\ntext\n{{X1}}\nbottom text\n{{collapse bottom}}'
+				);
+
+				const x1 = doc.findTemplate( 'X1' )[ 0 ];
+				x1.destroy();
+
+				return doc.toWikitext();
+			} ) ).trim().replace( /\r\n/g, '\n' ) ).toBe(
+				'{{collapse top}}\ntext\n\nbottom text\n{{collapse bottom}}'
+			);
+		} );
+
+		test( 'Template destruction (eraseLine = true)', async () => {
+			await expect( ( await page.evaluate( async () => {
+				const doc = await window.ParsoidDocument.fromWikitext(
+					'Wikipedia:Sandbox',
+					'{{collapse top}}\ntext\n{{X1}}\nbottom text\n{{collapse bottom}}'
+				);
+
+				const x1 = doc.findTemplate( 'X1' )[ 0 ];
+				x1.destroy( true );
+
+				return doc.toWikitext();
+			} ) ).trim().replace( /\r\n/g, '\n' ) ).toBe(
+				'{{collapse top}}\ntext\nbottom text\n{{collapse bottom}}'
+			);
 		} );
 
 	} );
@@ -258,7 +313,7 @@ describe( 'English Wikipedia', () => {
 				} ) );
 				( window as any ).test0 = elSpan;
 
-				doc.getDocument().body.appendChild( elSpan );
+				doc.getSection( 0 ).appendChild( elSpan );
 			} );
 
 			await expect( await page.evaluate( async () => {

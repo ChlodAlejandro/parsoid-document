@@ -11,10 +11,10 @@ const fs = require( 'fs' );
 
 	const child = childProcess.spawn( tscPath );
 	child.stdout.on( 'data', ( data ) => {
-		console.log( data );
+		console.log( data.toString() );
 	} );
 	child.stderr.on( 'data', ( data ) => {
-		console.error( data );
+		console.error( data.toString() );
 	} );
 	await new Promise( ( res ) => {
 		child.on( 'exit', () => {

@@ -1,8 +1,8 @@
 // ParsoidDocument:start
 /**
- * The root of this wiki's RestBase endpoint.
+ * The root of this wiki's RestBase endpoint. This MUST NOT end with a slash.
  */
-const restBaseRoot = ( window as any ).restBaseRoot || '/w/rest.php';
+const restBaseRoot = ( window as any ).restBaseRoot || '/api/rest_';
 
 /**
  * Encodes text for an API parameter. This performs both an encodeURIComponent
@@ -28,6 +28,43 @@ function cloneRegex( regex: RegExp ): RegExp {
 	);
 }
 
+interface ParsoidTransclusionTemplateInterface {
+	/**
+	 * The target of the transclusion. This is, in most cases, a template.
+	 */
+	target: {
+		/**
+		 * The wikitext of the transclusion. For block type transclusions, this will include
+		 * the newline at the end of the string.
+		 *
+		 * @example "copied"
+		 */
+		wt: string;
+		/**
+		 * A URI to the template being transcluded. If generating a template or modifying the
+		 * target, this can be omitted.
+		 *
+		 * @example "./Template:Copied"
+		 */
+		href?: string;
+	}
+	/**
+	 * Parameters to the transclusion. All members of this object are objects that have a
+	 * `wt` (wikitext) parameter, indicating the wikitext provided in the transclusion parameters.
+	 */
+	params: Record<string, { wt: string }>;
+	/**
+	 * For unbalanced wikitext, where multiple templates form a single element (such as {{collapse
+	 * top}} and {{collapse bottom}}) wrapping text with separate `<div>` tags found in both
+	 * templates. Since Parsoid is only able to attach attributes to a single element, it cannot
+	 * attach metadata on an element that spans multiple transclusions. In such a case, an `i` will
+	 * be provided. This is the template node's index in the block of content. For the most part,
+	 * you wouldn't need to touch this, as ParsoidDocument will automatically save to the correct
+	 * index.
+	 */
+	i: number;
+}
+
 /**
  * A class denoting a transclusion template node (a transcluded template, barring any included
  * text or inline parameters) inside an element with [typeof="mw:Transclusion"].
@@ -37,25 +74,71 @@ class ParsoidTransclusionTemplateNode {
 	/**
 	 * The ParsoidDocument handling this node.
 	 */
-	public readonly parsoidDocument: ParsoidDocument;
+	protected readonly parsoidDocument: ParsoidDocument;
 	/**
 	 * The HTMLElement that contains this template.
 	 */
-	public readonly originalElement: HTMLElement;
+	protected readonly element: HTMLElement;
 	/**
 	 * This template's data. This is the value for `template` for this specific "part" in the
 	 * `data-mw`.
 	 */
-	public readonly data: any;
+	protected readonly data: ParsoidTransclusionTemplateInterface;
 	/**
 	 * The `i` property of this specific node.
 	 */
-	public readonly i: number;
+	protected readonly i: number;
 
 	/**
 	 * Whether to automatically save parameter and target changes or not.
 	 */
 	public readonly autosave: boolean;
+
+	/**
+	 * Creates a new ParsoidTransclusionTemplateNode. Can be used later on to add a template
+	 * into wikitext. To have this node show up in wikitext, append the node's element (using
+	 * {@link ParsoidTransclusionTemplateNode.getElement()}) to the document of a ParsoidDocument.
+	 *
+	 * @param document The document used to generate this node.
+	 * @param template The template to create. If you wish to generate wikitext as a block-type
+	 *   transclusion (as long as a format is not provided through TemplateData), append a "\n"
+	 *   to the end of the template name.
+	 * @param parameters The parameters to the template.
+	 * @param autosave
+	 * @return A new ParsoidTransclusionTemplateNode.
+	 */
+	static fromNew(
+		document: ParsoidDocument,
+		template: string,
+		parameters?: Record<string, string | { toString(): string } >,
+		autosave?: boolean
+	): ParsoidTransclusionTemplateNode {
+		const el = document.getDocument().createElement( 'span' );
+		const data = {
+			target: {
+				wt: template
+			},
+			params: <Record<string, { wt: string }>>{},
+			i: 0
+		};
+
+		for ( const param in ( parameters ?? {} ) ) {
+			const value = parameters[ param ];
+			data.params[ param ] = {
+				wt: typeof value === 'string' ? value : value.toString()
+			};
+		}
+
+		el.setAttribute( 'typeof', 'mw:Transclusion' );
+		el.setAttribute( 'data-mw', JSON.stringify( {
+			parts: [ {
+				template: data
+			} ]
+		} ) );
+		return new ParsoidTransclusionTemplateNode(
+			document, el, data, data.i, autosave
+		);
+	}
 
 	/**
 	 * Create a new ParsoidTransclusionTemplateNode.
@@ -79,10 +162,24 @@ class ParsoidTransclusionTemplateNode {
 		autosave = true
 	) {
 		this.parsoidDocument = parsoidDocument;
-		this.originalElement = originalElement;
+		this.element = originalElement;
 		this.data = data;
 		this.i = i;
 		this.autosave = autosave;
+	}
+
+	/**
+	 * @return The ParsoidDocument of this node.
+	 */
+	getParsoidDocument(): ParsoidDocument {
+		return this.parsoidDocument;
+	}
+
+	/**
+	 * @return The element that this node is saved to.
+	 */
+	getElement(): HTMLElement {
+		return this.element;
 	}
 
 	/**
@@ -90,7 +187,7 @@ class ParsoidTransclusionTemplateNode {
 	 *
 	 * @return {Object} The target of this node, in wikitext and href (for links).
 	 */
-	getTarget(): { wt: string, href: string } {
+	getTarget(): { wt: string, href?: string } {
 		return this.data.target;
 	}
 
@@ -101,7 +198,10 @@ class ParsoidTransclusionTemplateNode {
 	 *   The target template (in wikitext, e.g. `Test/{{FULLPAGENAME}}`).
 	 */
 	setTarget( wikitext: string ): void {
-		this.data.target = wikitext;
+		this.data.target.wt = wikitext;
+		// Likely inaccurate. Just remove it to make sent data cleaner.
+		delete this.data.target.href;
+
 		if ( this.autosave ) {
 			this.save();
 		}
@@ -185,16 +285,59 @@ class ParsoidTransclusionTemplateNode {
 	}
 
 	/**
+	 * Removes this node from its element. This will prevent the node from being saved
+	 * again.
+	 *
+	 * @param eraseLine For block templates. Setting this to `true` will also erase a newline
+	 * that immediately succeeds this template, if one exists. This is useful in ensuring that
+	 * there are no excesses of newlines in the document.
+	 */
+	destroy( eraseLine?: boolean ) {
+		const existingData = JSON.parse( this.element.getAttribute( 'data-mw' ) );
+		const partToRemove = existingData.parts.find(
+			( part: { template: ParsoidTransclusionTemplateInterface } | any ) =>
+				part.template?.i === this.i
+		);
+		if ( eraseLine ) {
+			const iFront = existingData.parts.indexOf( partToRemove ) - 1;
+			const iBack = existingData.parts.indexOf( partToRemove ) + 1;
+
+			let removed = false;
+			if ( iBack < existingData.parts.length && typeof existingData.parts[ iBack ] === 'string' ) {
+				// Attempt to remove whitespace from the string in front of the template.
+				if ( /^\r?\n/.test( existingData.parts[ iBack ] ) ) {
+					// Whitespace found, remove it.
+					existingData.parts[ iBack ] =
+						existingData.parts[ iBack ].replace( /^\r?\n/, '' );
+					removed = true;
+				}
+			}
+
+			if ( !removed && iFront > -1 && typeof existingData.parts[ iFront ] === 'string' ) {
+				// Attempt to remove whitespace from the string behind the template.
+				if ( /\r?\n$/.test( existingData.parts[ iFront ] ) ) {
+					// Whitespace found, remove it.
+					existingData.parts[ iFront ] =
+						existingData.parts[ iFront ].replace( /\r?\n$/, '' );
+				}
+			}
+		}
+		existingData.parts.splice( existingData.parts.indexOf( partToRemove ), 1 );
+
+		this.element.setAttribute( 'data-mw', JSON.stringify( existingData ) );
+	}
+
+	/**
 	 * Saves this node (including modifications) back into its element.
 	 */
 	save() {
 		this.cleanup();
 
-		const existingData = JSON.parse( this.originalElement.getAttribute( 'data-mw' ) );
+		const existingData = JSON.parse( this.element.getAttribute( 'data-mw' ) );
 		existingData.parts.find(
 			( part: any ) => part.template?.i === this.i
 		).template = this.data;
-		this.originalElement.setAttribute( 'data-mw', JSON.stringify( existingData ) );
+		this.element.setAttribute( 'data-mw', JSON.stringify( existingData ) );
 	}
 
 }
@@ -507,9 +650,9 @@ class ParsoidDocument extends EventTarget {
 		this.restBaseUri = options.restBaseUri ?? restBaseRoot;
 
 		return fetch(
-			`${this.restBaseUri}/v1/page/${
+			`${this.restBaseUri}v1/page/html/${
 				encodeAPIComponent( page )
-			}/html?stash=true&t=${
+			}?stash=true&t=${
 				Date.now()
 			}`, {
 				cache: 'no-cache'
@@ -548,7 +691,7 @@ class ParsoidDocument extends EventTarget {
 	async loadWikitext( page: string, wikitext: string, restBaseUri: string ) {
 		this.restBaseUri = restBaseUri ?? restBaseRoot;
 		return fetch(
-			`${this.restBaseUri}/v1/transform/wikitext/to/html/${
+			`${this.restBaseUri}v1/transform/wikitext/to/html/${
 				encodeAPIComponent( page )
 			}?t=${
 				Date.now()
@@ -672,6 +815,16 @@ class ParsoidDocument extends EventTarget {
 	}
 
 	/**
+	 * Gets the `<section>` HTMLElement given a section ID.
+	 *
+	 * @param id The ID of the section
+	 * @return The HTMLElement of the section. If the section cannot be found, `null`.
+	 */
+	getSection( id: number ): HTMLElement {
+		return this.document.querySelector( `section[data-mw-section-id="${id}"]` );
+	}
+
+	/**
 	 * Finds a template in the loaded document.
 	 *
 	 * @param {string|RegExp} templateName The name of the template to look for.
@@ -751,7 +904,7 @@ class ParsoidDocument extends EventTarget {
 	 */
 	async toWikitext() {
 		// this.restBaseUri should be set.
-		let target = `${this.restBaseUri}/v1/transform/html/to/wikitext/${
+		let target = `${this.restBaseUri}v1/transform/html/to/wikitext/${
 			encodeAPIComponent( this.page )
 		}`;
 		if ( this.fromExisting ) {
