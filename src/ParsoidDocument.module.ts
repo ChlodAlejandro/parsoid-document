@@ -185,8 +185,16 @@ class ParsoidTransclusionTemplateNode {
 	 */
 	setTarget( wikitext: string ): void {
 		this.data.target.wt = wikitext;
-		// Likely inaccurate. Just remove it to make sent data cleaner.
-		delete this.data.target.href;
+		if ( mw.Title ) {
+			// If `mediawiki.Title` is loaded, use it.
+			this.data.target.href = './' + new mw.Title(
+				wikitext,
+				mw.config.get( 'wgNamespaceIds' ).template
+			).getPrefixedDb();
+		} else {
+			// Likely inaccurate. Just remove it to make sent data cleaner.
+			delete this.data.target.href;
+		}
 
 		if ( this.autosave ) {
 			this.save();
