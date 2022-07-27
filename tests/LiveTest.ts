@@ -199,8 +199,8 @@ describe( 'English Wikipedia', () => {
 						baz: 'qux'
 					}
 				);
-				doc.getSection( 0 ).appendChild( node1.getElement() );
-				node1.getElement().insertAdjacentElement( 'beforebegin', node2.getElement() );
+				doc.getSection( 0 ).appendChild( node1.element );
+				node1.element.insertAdjacentElement( 'beforebegin', node2.element );
 
 				return doc.toWikitext();
 			} ) ).trim() ).toBe( '{{X2|foo=bar|baz=qux}}{{X1|foo=bar|baz=qux}}' );
