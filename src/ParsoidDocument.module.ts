@@ -2,7 +2,7 @@
 /**
  * The root of this wiki's RestBase endpoint.
  */
-const restBaseRoot = ( window as any ).restBaseRoot || '/api/rest_v1';
+const restBaseRoot = ( window as any ).restBaseRoot || '/w/rest.php';
 
 /**
  * Encodes text for an API parameter. This performs both an encodeURIComponent
@@ -246,9 +246,15 @@ class ParsoidDocument extends EventTarget {
 	/**
 	 * The page currently loaded.
 	 *
-	 * @type {string}
+	 * @protected
 	 */
 	protected page: string;
+	/**
+	 * A relative URI to the root of the RESTBase instance that the page was loaded from.
+	 *
+	 * @protected
+	 */
+	protected restBaseUri: string;
 	/**
 	 * The ETag of the loaded Parsoid document.
 	 *
@@ -295,15 +301,21 @@ class ParsoidDocument extends EventTarget {
 	 *
 	 * @param {string} page The name of the page.
 	 * @param {string} html The HTML to use.
+	 * @param restBaseUri The relative URI to the RESTBase instance to be used for transforms.
 	 * @param {boolean} wrap Set to `false` to avoid wrapping the HTML within the body.
 	 */
 	static async fromHTML(
 		page: string,
 		html: string,
+		restBaseUri?: string,
 		wrap = true
 	): Promise<ParsoidDocument> {
 		const doc = new ParsoidDocument();
-		await doc.loadHTML( page, wrap ? ParsoidDocument.blankDocument : html );
+		await doc.loadHTML(
+			page,
+			wrap ? ParsoidDocument.blankDocument : html,
+			restBaseUri
+		);
 		if ( wrap ) {
 			doc.document.getElementsByTagName( 'body' )[ 0 ].innerHTML = html;
 		}
@@ -315,10 +327,11 @@ class ParsoidDocument extends EventTarget {
 	 * Creates a new ParsoidDocument from a blank page.
 	 *
 	 * @param {string} page The name of the page.
+	 * @param restBaseUri
 	 */
-	static async fromBlank( page: string ) {
+	static async fromBlank( page: string, restBaseUri?: string ) {
 		const doc = new ParsoidDocument();
-		await doc.loadHTML( page, ParsoidDocument.blankDocument );
+		await doc.loadHTML( page, ParsoidDocument.blankDocument, restBaseUri );
 
 		return doc;
 	}
@@ -328,10 +341,11 @@ class ParsoidDocument extends EventTarget {
 	 *
 	 * @param {string} page The page of the document.
 	 * @param {string} wikitext The wikitext to load.
+	 * @param restBaseUri
 	 */
-	static async fromWikitext( page: string, wikitext: string ) {
+	static async fromWikitext( page: string, wikitext: string, restBaseUri?: string ) {
 		const doc = new ParsoidDocument();
-		await doc.loadWikitext( page, wikitext );
+		await doc.loadWikitext( page, wikitext, restBaseUri );
 
 		return doc;
 	}
@@ -479,19 +493,23 @@ class ParsoidDocument extends EventTarget {
 	 *   Whether the current page should be discarded and reloaded.
 	 * @param options.allowMissing
 	 *   Set to `false` to avoid loading a blank document if the page does not exist.
+	 * @param options.restBaseUri
+	 *   A relative or absolute URI to the wiki's RESTBase root. This is
 	 */
 	async loadPage( page: string, options: {
+		restBaseUri?: string,
 		reload?: boolean,
 		allowMissing?: boolean
 	} = {} ): Promise<void> {
 		if ( this.document && options.reload !== true ) {
 			throw new Error( 'Attempted to reload an existing frame.' );
 		}
+		this.restBaseUri = options.restBaseUri ?? restBaseRoot;
 
 		return fetch(
-			`${restBaseRoot}/page/html/${
+			`${this.restBaseUri}/v1/page/${
 				encodeAPIComponent( page )
-			}?stash=true&t=${
+			}/html?stash=true&t=${
 				Date.now()
 			}`, {
 				cache: 'no-cache'
@@ -516,7 +534,7 @@ class ParsoidDocument extends EventTarget {
 					return data.text();
 				}
 			} )
-			.then( ( html ) => this.loadHTML( page, html ) )
+			.then( ( html ) => this.loadHTML( page, html, this.restBaseUri ) )
 			.catch( this.notifyLoadError );
 	}
 
@@ -525,10 +543,12 @@ class ParsoidDocument extends EventTarget {
 	 *
 	 * @param {string} page The page title of this document.
 	 * @param {string} wikitext The wikitext to load.
+	 * @param restBaseUri
 	 */
-	async loadWikitext( page: string, wikitext: string ) {
+	async loadWikitext( page: string, wikitext: string, restBaseUri: string ) {
+		this.restBaseUri = restBaseUri ?? restBaseRoot;
 		return fetch(
-			`${restBaseRoot}/transform/wikitext/to/html/${
+			`${this.restBaseUri}/v1/transform/wikitext/to/html/${
 				encodeAPIComponent( page )
 			}?t=${
 				Date.now()
@@ -554,7 +574,7 @@ class ParsoidDocument extends EventTarget {
 
 				return data.text();
 			} )
-			.then( ( html ) => this.loadHTML( page, html ) )
+			.then( ( html ) => this.loadHTML( page, html, this.restBaseUri ) )
 			.catch( this.notifyLoadError );
 	}
 
@@ -563,8 +583,10 @@ class ParsoidDocument extends EventTarget {
 	 *
 	 * @param {string} page The loaded page's name.
 	 * @param {string} html The page's HTML.
+	 * @param restBaseUri A relative or absolute URI to the wiki's RESTBase root.
 	 */
-	async loadHTML( page: string, html: string ): Promise<void> {
+	async loadHTML( page: string, html: string, restBaseUri?: string ): Promise<void> {
+		this.restBaseUri = restBaseUri ?? restBaseRoot;
 		// A Blob is used in order to allow cross-frame access without changing
 		// the origin of the frame.
 		this.iframe.src = URL.createObjectURL(
@@ -728,7 +750,8 @@ class ParsoidDocument extends EventTarget {
 	 * @return {Promise<string>} The wikitext of this document.
 	 */
 	async toWikitext() {
-		let target = `${restBaseRoot}/transform/html/to/wikitext/${
+		// this.restBaseUri should be set.
+		let target = `${this.restBaseUri}/v1/transform/html/to/wikitext/${
 			encodeAPIComponent( this.page )
 		}`;
 		if ( this.fromExisting ) {
