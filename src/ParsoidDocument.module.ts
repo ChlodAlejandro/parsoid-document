@@ -296,37 +296,57 @@ class ParsoidTransclusionTemplateNode {
 	 */
 	destroy( eraseLine?: boolean ) {
 		const existingData = JSON.parse( this.element.getAttribute( 'data-mw' ) );
-		const partToRemove = existingData.parts.find(
-			( part: { template: ParsoidTransclusionTemplateInterface } | any ) =>
-				part.template?.i === this.i
-		);
-		if ( eraseLine ) {
-			const iFront = existingData.parts.indexOf( partToRemove ) - 1;
-			const iBack = existingData.parts.indexOf( partToRemove ) + 1;
 
-			let removed = false;
-			if ( iBack < existingData.parts.length && typeof existingData.parts[ iBack ] === 'string' ) {
-				// Attempt to remove whitespace from the string in front of the template.
-				if ( /^\r?\n/.test( existingData.parts[ iBack ] ) ) {
-					// Whitespace found, remove it.
-					existingData.parts[ iBack ] =
-						existingData.parts[ iBack ].replace( /^\r?\n/, '' );
-					removed = true;
+		if ( existingData.parts.length === 1 ) {
+			const nodeElements = this.parsoidDocument.getNodeElements( this );
+			const succeedingTextNode = nodeElements[ nodeElements.length - 1 ]?.nextSibling;
+			// The element contains nothing else except this node. Destroy the element entirely.
+			this.parsoidDocument.destroyParsoidNode( this.element );
+
+			if (
+				eraseLine && succeedingTextNode &&
+				succeedingTextNode.nodeType === Node.TEXT_NODE
+			) {
+				// Erase a starting newline, if one exists
+				succeedingTextNode.nodeValue = succeedingTextNode.nodeValue
+					.replace( /^\n/, '' );
+			}
+		} else {
+			const partToRemove = existingData.parts.find(
+				( part: { template: ParsoidTransclusionTemplateInterface } | any ) =>
+					part.template?.i === this.i
+			);
+			if ( eraseLine ) {
+				const iFront = existingData.parts.indexOf( partToRemove ) - 1;
+				const iBack = existingData.parts.indexOf( partToRemove ) + 1;
+
+				let removed = false;
+				if (
+					iBack < existingData.parts.length &&
+					typeof existingData.parts[ iBack ] === 'string'
+				) {
+					// Attempt to remove whitespace from the string in front of the template.
+					if ( /^\r?\n/.test( existingData.parts[ iBack ] ) ) {
+						// Whitespace found, remove it.
+						existingData.parts[ iBack ] =
+							existingData.parts[ iBack ].replace( /^\r?\n/, '' );
+						removed = true;
+					}
+				}
+
+				if ( !removed && iFront > -1 && typeof existingData.parts[ iFront ] === 'string' ) {
+					// Attempt to remove whitespace from the string behind the template.
+					if ( /\r?\n$/.test( existingData.parts[ iFront ] ) ) {
+						// Whitespace found, remove it.
+						existingData.parts[ iFront ] =
+							existingData.parts[ iFront ].replace( /\r?\n$/, '' );
+					}
 				}
 			}
+			existingData.parts.splice( existingData.parts.indexOf( partToRemove ), 1 );
 
-			if ( !removed && iFront > -1 && typeof existingData.parts[ iFront ] === 'string' ) {
-				// Attempt to remove whitespace from the string behind the template.
-				if ( /\r?\n$/.test( existingData.parts[ iFront ] ) ) {
-					// Whitespace found, remove it.
-					existingData.parts[ iFront ] =
-						existingData.parts[ iFront ].replace( /\r?\n$/, '' );
-				}
-			}
+			this.element.setAttribute( 'data-mw', JSON.stringify( existingData ) );
 		}
-		existingData.parts.splice( existingData.parts.indexOf( partToRemove ), 1 );
-
-		this.element.setAttribute( 'data-mw', JSON.stringify( existingData ) );
 	}
 
 	/**
@@ -897,6 +917,42 @@ class ParsoidDocument extends EventTarget {
 		return this.document.querySelector(
 			`[about="${pivot.getAttribute( 'about' )}"][data-mw]`
 		);
+	}
+
+	/**
+	 * Get HTML elements that are associated to a specific Parsoid node using its
+	 * `about` attribute.
+	 *
+	 * @param node The node to get the elements of
+	 * @return All elements that match the `about` of the given node.
+	 */
+	getNodeElements( node: HTMLElement | ParsoidTransclusionTemplateNode ): HTMLElement[] {
+		return Array.from(
+			this.document.querySelectorAll(
+				`[about="${
+					( node instanceof ParsoidTransclusionTemplateNode ? node.element : node )
+						.getAttribute( 'about' )
+				}"]`
+			)
+		);
+	}
+
+	/**
+	 * Deletes all elements that have the same `about` attribute as the given element.
+	 * This effectively deletes an element, be it a transclusion set, file, section,
+	 * or otherwise.
+	 *
+	 * @param element
+	 */
+	destroyParsoidNode( element: HTMLElement ): void {
+		if ( element.hasAttribute( 'about' ) ) {
+			this.getNodeElements( element ).forEach( ( nodeElement ) => {
+				nodeElement.parentElement.removeChild( nodeElement );
+			} );
+		} else {
+			// No "about" attribute. Just remove that element only.
+			element.parentElement.removeChild( element );
+		}
 	}
 
 	/**

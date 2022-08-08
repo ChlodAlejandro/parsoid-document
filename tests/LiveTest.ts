@@ -267,7 +267,23 @@ describe( 'English Wikipedia', () => {
 			);
 		} );
 
-		test( 'Template destruction (eraseLine = true)', async () => {
+		test( 'Simple template destruction (eraseLine = true)', async () => {
+			await expect( ( await page.evaluate( async () => {
+				const doc = await window.ParsoidDocument.fromWikitext(
+					'Wikipedia:Sandbox',
+					'1\n{{X1}}\n4'
+				);
+
+				const x1 = doc.findTemplate( 'X1' )[ 0 ];
+				x1.destroy( true );
+
+				return doc.toWikitext();
+			} ) ).trim().replace( /\r\n/g, '\n' ) ).toBe(
+				'1\n4'
+			);
+		} );
+
+		test( 'Complex template destruction (eraseLine = true)', async () => {
 			await expect( ( await page.evaluate( async () => {
 				const doc = await window.ParsoidDocument.fromWikitext(
 					'Wikipedia:Sandbox',
@@ -281,6 +297,44 @@ describe( 'English Wikipedia', () => {
 			} ) ).trim().replace( /\r\n/g, '\n' ) ).toBe(
 				'{{collapse top}}\ntext\nbottom text\n{{collapse bottom}}'
 			);
+		} );
+
+		test( 'Simple template destruction removes entire node', async () => {
+			await expect( ( await page.evaluate( async () => {
+				const doc = await window.ParsoidDocument.fromWikitext(
+					'Wikipedia:Sandbox',
+					'{{backwards copy}}'
+				);
+
+				const bc = doc.findTemplate( 'backwards copy' )[ 0 ];
+				bc.destroy();
+
+				return doc.getDocument().querySelector( '.box-backwards-copy' ) == null;
+			} ) ) ).toBe(
+				true
+			);
+		} );
+
+		test( 'Complex template destruction removes only part of node', async () => {
+			await expect( ( await page.evaluate( async () => {
+				const doc = await window.ParsoidDocument.fromWikitext(
+					'Wikipedia:Sandbox',
+					'{{collapse top}}\ntext\n{{backwards copy}}\nbottom text\n{{collapse bottom}}'
+				);
+
+				const bc = doc.findTemplate( 'backwards copy' )[ 0 ];
+				bc.destroy();
+
+				return [
+					bc.element.hasAttribute( 'data-mw' ),
+					doc.getDocument().querySelector( '.box-backwards-copy' ) == null
+				];
+			} ) ) ).toEqual( [
+				true,
+				// This should be false since the tmbox element does not have any metadata that
+				// can tell us that it is actually the {{backwards copy}] template.
+				false
+			] );
 		} );
 
 	} );
