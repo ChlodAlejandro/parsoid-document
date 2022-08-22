@@ -872,6 +872,10 @@ class ParsoidDocument extends EventTarget {
 					if ( part.template == null ) {
 						return false;
 					}
+					if ( part.template.target?.href == null ) {
+                        // Parser function or magic word, not a template transclusion
+						return false;
+					}
 
 					const compareTarget: string = part.template.target[
 						hrefMode ? 'href' : 'wt'
