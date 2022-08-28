@@ -116,7 +116,7 @@ class ParsoidTransclusionTemplateNode {
 		const el = document.getDocument().createElement( 'span' );
 
 		const target: ParsoidTransclusionTemplateInterface['target'] = { wt: template };
-		if ( mw.Title ) {
+		if ( mw?.Title ) {
 			// If `mediawiki.Title` is loaded, use it.
 			target.href = './' + new mw.Title(
 				target.wt,
@@ -193,7 +193,7 @@ class ParsoidTransclusionTemplateNode {
 	 */
 	setTarget( wikitext: string ): void {
 		this.data.target.wt = wikitext;
-		if ( mw.Title ) {
+		if ( mw?.Title ) {
 			// If `mediawiki.Title` is loaded, use it.
 			this.data.target.href = './' + new mw.Title(
 				wikitext,
@@ -516,13 +516,20 @@ class ParsoidDocument extends EventTarget {
 	}
 
 	/**
+	 * @return `true` if the page is a redirect. `false` if otherwise.
+	 */
+	get redirect(): boolean {
+		return this.document &&
+			this.document.querySelector( "[rel='mw:PageProp/redirect']" ) !== null;
+	}
+
+	/**
 	 * Create a new ParsoidDocument instance.
 	 */
 	protected constructor() {
 		super();
 
 		this.iframe = document.createElement( 'iframe' );
-		this.iframe.id = 'coordinatorFrame';
 		Object.assign( this.iframe.style, {
 			width: '0',
 			height: '0',
@@ -564,6 +571,13 @@ class ParsoidDocument extends EventTarget {
 				childList: true,
 				subtree: true
 			} );
+
+			// Replace the page title. Handles redirects.
+			if ( this.document.title ) {
+				this.page = mw?.Title ?
+					new mw.Title( this.document.title ).getPrefixedText() :
+					this.document.title;
+			}
 		} );
 
 		document.getElementsByTagName( 'body' )[ 0 ].appendChild( this.iframe );
@@ -628,7 +642,7 @@ class ParsoidDocument extends EventTarget {
 	 * @param {Error} error An error object.
 	 */
 	notifyLoadError( error: Error ): void {
-		if ( mw.notify ) {
+		if ( mw?.notify ) {
 			mw.notify( [
 				( () => {
 					const a = document.createElement( 'span' );
@@ -660,11 +674,17 @@ class ParsoidDocument extends EventTarget {
 	 *   Set to `false` to avoid loading a blank document if the page does not exist.
 	 * @param options.restBaseUri
 	 *   A relative or absolute URI to the wiki's RESTBase root. This is
+	 * @param options.requestOptions
+	 *   Options to pass to the `fetch` request.
+	 * @param options.followRedirects
+	 *   Whether to follow page redirects or not.
 	 */
 	async loadPage( page: string, options: {
+		followRedirects?: boolean,
 		restBaseUri?: string,
 		reload?: boolean,
-		allowMissing?: boolean
+		allowMissing?: boolean,
+		requestOptions?: RequestInit
 	} = {} ): Promise<void> {
 		if ( this.document && options.reload !== true ) {
 			throw new Error( 'Attempted to reload an existing frame.' );
@@ -674,11 +694,15 @@ class ParsoidDocument extends EventTarget {
 		return fetch(
 			`${this.restBaseUri}v1/page/html/${
 				encodeAPIComponent( page )
-			}?stash=true&t=${
+			}?stash=true&redirect=${
+				options.followRedirects !== false ? 'true' : 'false'
+			}&t=${
 				Date.now()
-			}`, {
-				cache: 'no-cache'
-			}
+			}`, Object.assign(
+				{}, {
+					cache: 'no-cache'
+				}, options.requestOptions ?? {}
+			)
 		)
 			.then( ( data ) => {
 				/**
@@ -762,7 +786,7 @@ class ParsoidDocument extends EventTarget {
 		return new Promise<void>( ( res ) => {
 			this.iframe.addEventListener( 'load', () => {
 				res();
-			} );
+			}, { once: true } );
 		} );
 	}
 
@@ -873,7 +897,7 @@ class ParsoidDocument extends EventTarget {
 						return false;
 					}
 					if ( part.template.target?.href == null ) {
-                        // Parser function or magic word, not a template transclusion
+						// Parser function or magic word, not a template transclusion
 						return false;
 					}
 

@@ -4,7 +4,7 @@
 
 *Originally from [User:Chlod/Scripts/ParsoidDocument](https://en.wikipedia.org/wiki/User:Chlod/Scripts/ParsoidDocument) on the English Wikipedia.*
 
-ParsoidDocument is an ES9+ library which implements a Parsoid-compatible document handler using an HTML5 IFrame. It is not a userscript, but is instead loaded by other userscripts. The IFrame contains the Parsoid document, which can then be modified using standard DOM functions. This is used to perform Parsoid-dependent operations in the browser without having to pull in the entirety of the VisualEditor codebase.
+ParsoidDocument is an ES9+ library which implements a Parsoid-compatible document handler using an HTML5 IFrame. It is not a userscript, but is instead loaded by other userscripts. The IFrame contains the Parsoid document, which can then be modified using standard DOM functions. This is used to perform Parsoid-dependent operations in the browser without having to pull in the entirety of the VisualEditor codebase. The library works even without the existence of MediaWiki `notification` and `Title` modules, although they are helpful in ensuring data stability.
 
 To be fully optimized, this should be implemented as a gadget and loaded through [mw.loader](https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/mw.loader). Since the Gadgets extension [does not support ES6+](https://phabricator.wikimedia.org/T75714), however, it cannot yet be implemented as one on most wikis.
 

@@ -100,6 +100,39 @@ describe( 'English Wikipedia', () => {
 
 	} );
 
+	describe( 'Redirection and metadata handling', () => {
+
+		test( 'Load redirect page (follow)', async () => {
+			expect( await page.evaluate( async () => {
+				const laptop = await window.ParsoidDocument.fromPage( '\u{1f4bb}' );
+
+				return laptop.getPage();
+			} ) ).toBe( 'Laptop' );
+		} );
+
+		test( 'Load redirect page (no-follow)', async () => {
+			expect( await page.evaluate( async () => {
+				const laptop = await window.ParsoidDocument.fromPage( '\u{1f4bb}', {
+					followRedirects: false
+				} );
+
+				return laptop.getPage();
+			} ) ).toBe( '\u{1f4bb}' );
+		} );
+
+		test( 'Redirect page check', async () => {
+			expect( await page.evaluate( async () => {
+				const laptop = await window.ParsoidDocument.fromPage( '\u{1f4bb}' );
+				const laptopRedirect = await window.ParsoidDocument.fromPage( '\u{1f4bb}', {
+					followRedirects: false
+				} );
+
+				return [ laptop.redirect, laptopRedirect.redirect ];
+			} ) ).toEqual( [ false, true ] );
+		} );
+
+	} );
+
 	describe( 'Parsoid template search tests', () => {
 
 		test( 'Find {{T}} template in wikitext document', async () => {
