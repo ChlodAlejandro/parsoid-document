@@ -1,4 +1,7 @@
+/* eslint-disable compat/compat */
 import ParsoidDocument from '../src/ParsoidDocument.module';
+import axios, { AxiosResponse } from 'axios';
+import 'expect-puppeteer';
 
 declare global {
 	interface Window {
@@ -7,9 +10,53 @@ declare global {
 	}
 }
 
+/**
+ *
+ * @param wikitext
+ * @param title
+ */
+async function parseWikitext( wikitext: string, title = 'Wikipedia:Sandbox' ): Promise<any> {
+	return await axios.post( 'https://en.wikipedia.org/w/api.php', new URLSearchParams( {
+		formatversion: '2',
+		format: 'json',
+		action: 'parse',
+		title,
+		text: wikitext,
+		prop: 'text',
+		disablelimitreport: '1',
+		disableeditsection: '1',
+		preview: '1',
+		disabletoc: '1'
+	} ), {
+		responseType: 'json'
+	} ).then( ( r: AxiosResponse<any> ) => r.data );
+}
+
 jest.setTimeout( 60000 );
 
 describe( 'English Wikipedia', () => {
+
+	describe( 'Template content test', () => {
+
+		test( 'X48 is blank when transcluded', async () => {
+			const x48 = await parseWikitext( '{{X48}}' );
+			expect( x48 ).toHaveProperty( 'parse' );
+			expect( x48 ).toHaveProperty( 'parse.title' );
+			expect( x48 ).toHaveProperty( 'parse.pageid' );
+			expect( x48 ).toHaveProperty( 'parse.text' );
+			expect( x48.parse.text ).toBe( '<div class="mw-parser-output"></div>' );
+		} );
+
+		test( 'X47 is blank when transcluded', async () => {
+			const x47 = await parseWikitext( '{{X47}}' );
+			expect( x47 ).toHaveProperty( 'parse' );
+			expect( x47 ).toHaveProperty( 'parse.title' );
+			expect( x47 ).toHaveProperty( 'parse.pageid' );
+			expect( x47 ).toHaveProperty( 'parse.text' );
+			expect( x47.parse.text ).toBe( '<div class="mw-parser-output"></div>' );
+		} );
+
+	} );
 
 	beforeAll( async () => {
 		await page.goto( 'https://en.wikipedia.org/wiki/Wikipedia:Sandbox' );
@@ -91,7 +138,7 @@ describe( 'English Wikipedia', () => {
 					await window.ParsoidDocument.fromWikitext(
 						'Project:ThisPageShouldBeMissing/' +
 						Math.random().toString().replace( '.', '' ),
-						'{{ T | X1 | foo = 1 | bar = 2 }}{{ X1 | foo = 1 | bar = 2 }}'
+						'{{ T | X48 | foo = 1 | bar = 2 }}{{ X48 | foo = 1 | bar = 2 }}'
 					);
 
 				return doc.getDocument() != null;
@@ -156,13 +203,13 @@ describe( 'English Wikipedia', () => {
 			} ) ).toBe( true );
 		} );
 
-		test( 'Find {{X1}} template in wikitext document', async () => {
+		test( 'Find {{X48}} template in wikitext document', async () => {
 			expect( await page.evaluate( async () => {
 				const doc = window.testDocuments.wikitext;
-				const template = doc.findTemplate( 'X1' )[ 0 ];
+				const template = doc.findTemplate( 'X48' )[ 0 ];
 
 				return template != null &&
-					template.getTarget().wt.trim() === 'X1';
+					template.getTarget().wt.trim() === 'X48';
 			} ) ).toBe( true );
 		} );
 
@@ -221,13 +268,13 @@ describe( 'English Wikipedia', () => {
 				const doc = await window.ParsoidDocument.fromBlank( 'Wikipedia:Sandbox' );
 
 				const node1 = await window.ParsoidDocument.Node.fromNew(
-					doc, 'X1', {
+					doc, 'X48', {
 						foo: 'bar',
 						baz: 'qux'
 					}
 				);
 				const node2 = await window.ParsoidDocument.Node.fromNew(
-					doc, 'X2', {
+					doc, 'X47', {
 						foo: 'bar',
 						baz: 'qux'
 					}
@@ -236,7 +283,7 @@ describe( 'English Wikipedia', () => {
 				node1.element.insertAdjacentElement( 'beforebegin', node2.element );
 
 				return doc.toWikitext();
-			} ) ).trim() ).toBe( '{{X2|foo=bar|baz=qux}}{{X1|foo=bar|baz=qux}}' );
+			} ) ).trim() ).toBe( '{{X47|foo=bar|baz=qux}}{{X48|foo=bar|baz=qux}}' );
 		} );
 
 		test( 'Template insertion from document element', async () => {
@@ -249,7 +296,7 @@ describe( 'English Wikipedia', () => {
 					parts: [
 						{
 							template: {
-								target: { wt: 'X1', href: './Template:X1' },
+								target: { wt: 'X48', href: './Template:X48' },
 								params: {
 									foo: {
 										wt: 'bar'
@@ -264,7 +311,7 @@ describe( 'English Wikipedia', () => {
 						'text',
 						{
 							template: {
-								target: { wt: 'X2', href: './Template:X2' },
+								target: { wt: 'X47', href: './Template:X47' },
 								params: {
 									foo: {
 										wt: 'bar'
@@ -281,18 +328,18 @@ describe( 'English Wikipedia', () => {
 				doc.getSection( 0 ).appendChild( elSpan );
 
 				return doc.toWikitext();
-			} ) ).trim() ).toBe( '{{X1|foo=bar|baz=qux}}text{{X2|foo=bar|baz=qux}}' );
+			} ) ).trim() ).toBe( '{{X48|foo=bar|baz=qux}}text{{X47|foo=bar|baz=qux}}' );
 		} );
 
 		test( 'Template destruction', async () => {
 			await expect( ( await page.evaluate( async () => {
 				const doc = await window.ParsoidDocument.fromWikitext(
 					'Wikipedia:Sandbox',
-					'{{collapse top}}\ntext\n{{X1}}\nbottom text\n{{collapse bottom}}'
+					'{{collapse top}}\ntext\n{{X48}}\nbottom text\n{{collapse bottom}}'
 				);
 
-				const x1 = doc.findTemplate( 'X1' )[ 0 ];
-				x1.destroy();
+				const x48 = doc.findTemplate( 'X48' )[ 0 ];
+				x48.destroy();
 
 				return doc.toWikitext();
 			} ) ).trim().replace( /\r\n/g, '\n' ) ).toBe(
@@ -304,11 +351,11 @@ describe( 'English Wikipedia', () => {
 			await expect( ( await page.evaluate( async () => {
 				const doc = await window.ParsoidDocument.fromWikitext(
 					'Wikipedia:Sandbox',
-					'1\n{{X1}}\n4'
+					'1\n{{X48}}\n4'
 				);
 
-				const x1 = doc.findTemplate( 'X1' )[ 0 ];
-				x1.destroy( true );
+				const x48 = doc.findTemplate( 'X48' )[ 0 ];
+				x48.destroy( true );
 
 				return doc.toWikitext();
 			} ) ).trim().replace( /\r\n/g, '\n' ) ).toBe(
@@ -320,11 +367,11 @@ describe( 'English Wikipedia', () => {
 			await expect( ( await page.evaluate( async () => {
 				const doc = await window.ParsoidDocument.fromWikitext(
 					'Wikipedia:Sandbox',
-					'{{collapse top}}\ntext\n{{X1}}\nbottom text\n{{collapse bottom}}'
+					'{{collapse top}}\ntext\n{{X48}}\nbottom text\n{{collapse bottom}}'
 				);
 
-				const x1 = doc.findTemplate( 'X1' )[ 0 ];
-				x1.destroy( true );
+				const x48 = doc.findTemplate( 'X48' )[ 0 ];
+				x48.destroy( true );
 
 				return doc.toWikitext();
 			} ) ).trim().replace( /\r\n/g, '\n' ) ).toBe(
