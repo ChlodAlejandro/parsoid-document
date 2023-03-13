@@ -46,7 +46,7 @@
         "eslint-config-wikimedia": "^0.24.0",
         "eslint-plugin-compat": "^4.0.2",
         "eslint-plugin-jsdoc": "^40.0.0",
-        "expect-puppeteer": "^7.0.0",
+        "expect-puppeteer": "^8.0.5",
         "http-server": "^14.1.0",
         "jest": "^27.5.1",
         "jest-puppeteer": "^6.1.0",
