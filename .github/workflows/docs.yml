@@ -34,11 +34,7 @@ jobs:
       -   name: Run TypeDoc
           working-directory: ./project/
           run: |
-            npx --yes typedoc \
-                --out ../docs \
-                --excludeExternals true \
-                --cleanOutputDir false \
-                src/ParsoidDocument.module.ts
+            npx --yes typedoc src/ParsoidDocument.module.ts
 
       # Commit
       -   name: Commit new documentation
