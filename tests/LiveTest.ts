@@ -59,10 +59,10 @@ describe( 'English Wikipedia', () => {
 	} );
 
 	beforeAll( async () => {
+		jest.setTimeout( 10000 );
+		
 		await page.goto( 'https://en.wikipedia.org/wiki/Wikipedia:Sandbox' );
 		await page.addScriptTag( { path: './build/ParsoidDocument.js' } );
-
-		jest.setTimeout( 10000 );
 	} );
 
 	test( 'Wikipedia loaded properly', async () => {

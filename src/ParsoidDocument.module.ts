@@ -674,6 +674,8 @@ class ParsoidDocument extends EventTarget {
 	 *   Set to `false` to avoid loading a blank document if the page does not exist.
 	 * @param options.restBaseUri
 	 *   A relative or absolute URI to the wiki's RESTBase root. This is
+	 *   `/api/rest_` by default, though the `window.restBaseRoot` variable
+	 *   can modify it.
 	 * @param options.requestOptions
 	 *   Options to pass to the `fetch` request.
 	 * @param options.followRedirects

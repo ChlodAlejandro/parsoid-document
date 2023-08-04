@@ -9,7 +9,7 @@ module.exports = {
 	testRegex: '(/tests/)(.*?)(Tests?)(\\.ts|\\.js)$',
 	extensionsToTreatAsEsm: [ '.ts' ],
 	moduleNameMapper: {
-		axios: 'axios/dist/node/axios.cjs',
+		axios: '<rootDir>/node_modules/axios/dist/node/axios.cjs',
 		'^(\\.{1,2}/.*)\\.js$': '$1'
 	},
 	transform: {
