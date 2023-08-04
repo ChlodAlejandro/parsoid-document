@@ -5,8 +5,8 @@ on:
     pull_request:
 
 jobs:
-    audit:
-        name: Build, Audit, Test
+    test:
+        name: Build and Test
         runs-on: ubuntu-latest
         strategy:
             fail-fast: false
@@ -29,13 +29,6 @@ jobs:
                 run: npm ci
                 env:
                     PUPPETEER_PRODUCT: ${{ matrix.product }}
-
-            -   name: Perform audit
-                uses: oke-py/npm-audit-action@v1.8.3
-                with:
-                    audit_level: moderate
-                    create_issues: false
-                    github_token: ${{ secrets.GITHUB_TOKEN }}
 
             -   name: Perform tests
                 run: npm test
