@@ -59,6 +59,9 @@
         "types-mediawiki": "^1.2.0",
         "typescript": "^4.5.5"
     },
+    "overrides": {
+        "semver": "^7.5.4"
+    },
     "browserslist": [
         "cover 95% and supports fetch, not IE 11"
     ]
