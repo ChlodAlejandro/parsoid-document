@@ -13,7 +13,6 @@
         "plugin:@typescript-eslint/recommended",
         "plugin:compat/recommended",
         "plugin:jsdoc/recommended",
-        "wikimedia/client-es6",
         "wikimedia/jquery",
         "wikimedia/mediawiki"
     ],
@@ -25,7 +24,11 @@
     },
     "rules": {
         "@typescript-eslint/no-explicit-any": "off",
+
+        "jsdoc/require-returns": "off",
         "jsdoc/require-returns-type": "off",
+        "jsdoc/require-param-description": "off",
+        "jsdoc/require-returns-description": "off",
         "jsdoc/require-param-type": "off",
         "jsdoc/require-jsdoc": [
             "error",

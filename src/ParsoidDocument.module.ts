@@ -7,9 +7,8 @@ const restBaseRoot = ( window as any ).restBaseRoot || '/api/rest_';
 /**
  * Encodes text for an API parameter. This performs both an encodeURIComponent
  * and a string replace to change spaces into underscores.
- *
  * @param {string} text
- * @return {string}
+ * @returns {string}
  */
 function encodeAPIComponent( text: string ): string {
 	return encodeURIComponent( text.replace( / /g, '_' ) );
@@ -17,9 +16,8 @@ function encodeAPIComponent( text: string ): string {
 
 /**
  * Clones a regular expression.
- *
  * @param regex The regular expression to clone.
- * @return A new regular expression object.
+ * @returns A new regular expression object.
  */
 function cloneRegex( regex: RegExp ): RegExp {
 	return new RegExp(
@@ -36,14 +34,12 @@ interface ParsoidTransclusionTemplateInterface {
 		/**
 		 * The wikitext of the transclusion. For block type transclusions, this will include
 		 * the newline at the end of the string.
-		 *
 		 * @example "copied"
 		 */
 		wt: string;
 		/**
 		 * A URI to the template being transcluded. If generating a template or modifying the
 		 * target, this can be omitted.
-		 *
 		 * @example "./Template:Copied"
 		 */
 		href?: string;
@@ -98,14 +94,13 @@ class ParsoidTransclusionTemplateNode {
 	 * Creates a new ParsoidTransclusionTemplateNode. Can be used later on to add a template
 	 * into wikitext. To have this node show up in wikitext, append the node's element (using
 	 * {@link ParsoidTransclusionTemplateNode.element}) to the document of a ParsoidDocument.
-	 *
 	 * @param document The document used to generate this node.
 	 * @param template The template to create. If you wish to generate wikitext as a block-type
 	 *   transclusion (as long as a format is not provided through TemplateData), append a "\n"
 	 *   to the end of the template name.
 	 * @param parameters The parameters to the template.
 	 * @param autosave
-	 * @return A new ParsoidTransclusionTemplateNode.
+	 * @returns A new ParsoidTransclusionTemplateNode.
 	 */
 	static fromNew(
 		document: ParsoidDocument,
@@ -150,7 +145,6 @@ class ParsoidTransclusionTemplateNode {
 
 	/**
 	 * Create a new ParsoidTransclusionTemplateNode.
-	 *
 	 * @param {ParsoidDocument} parsoidDocument
 	 *     The document handling this transclusion node.
 	 * @param {HTMLElement} originalElement
@@ -178,8 +172,7 @@ class ParsoidTransclusionTemplateNode {
 
 	/**
 	 * Gets the target of this node.
-	 *
-	 * @return {Object} The target of this node, in wikitext and href (for links).
+	 * @returns {object} The target of this node, in wikitext and href (for links).
 	 */
 	getTarget(): { wt: string, href?: string } {
 		return this.data.target;
@@ -187,7 +180,6 @@ class ParsoidTransclusionTemplateNode {
 
 	/**
 	 * Sets the target of this template (in wikitext).
-	 *
 	 * @param {string} wikitext
 	 *   The target template (in wikitext, e.g. `Test/{{FULLPAGENAME}}`).
 	 */
@@ -211,8 +203,7 @@ class ParsoidTransclusionTemplateNode {
 
 	/**
 	 * Gets the parameters of this node.
-	 *
-	 * @return {Object.<string, {wt: string}>} The parameters of this node, in wikitext.
+	 * @returns {{[key:string]:{wt:string}}} The parameters of this node, in wikitext.
 	 */
 	getParameters(): { [key: string]: { wt: string } } {
 		return this.data.params;
@@ -220,9 +211,8 @@ class ParsoidTransclusionTemplateNode {
 
 	/**
 	 * Checks if a template has a parameter.
-	 *
 	 * @param {string} key The key of the parameter to check.
-	 * @return {boolean} `true` if the template has the given parameter
+	 * @returns {boolean} `true` if the template has the given parameter
 	 */
 	hasParameter( key: string ): boolean {
 		return this.data.params[ key ] != null;
@@ -230,9 +220,8 @@ class ParsoidTransclusionTemplateNode {
 
 	/**
 	 * Gets the value of a parameter.
-	 *
 	 * @param {string} key The key of the parameter to check.
-	 * @return {string} The parameter value.
+	 * @returns {string} The parameter value.
 	 */
 	getParameter( key: string ): string {
 		return this.data.params[ key ]?.wt;
@@ -241,7 +230,6 @@ class ParsoidTransclusionTemplateNode {
 	/**
 	 * Sets the value for a specific parameter. If `value` is null or undefined,
 	 * the parameter is removed.
-	 *
 	 * @param {string} key The parameter key to set.
 	 * @param {string} value The new value of the parameter.
 	 */
@@ -259,7 +247,6 @@ class ParsoidTransclusionTemplateNode {
 
 	/**
 	 * Removes a parameter from the template.
-	 *
 	 * @param key The parameter key to remove.
 	 */
 	removeParameter( key: string ): void {
@@ -289,7 +276,6 @@ class ParsoidTransclusionTemplateNode {
 	/**
 	 * Removes this node from its element. This will prevent the node from being saved
 	 * again.
-	 *
 	 * @param eraseLine For block templates. Setting this to `true` will also erase a newline
 	 * that immediately succeeds this template, if one exists. This is useful in ensuring that
 	 * there are no excesses of newlines in the document.
@@ -373,62 +359,52 @@ class ParsoidDocument extends EventTarget {
 	static readonly Node: typeof ParsoidTransclusionTemplateNode = ParsoidTransclusionTemplateNode;
 	/**
 	 * A blank Parsoid document, with a section 0.
-	 *
 	 * @type {string}
 	 */
 	static blankDocument = '<html><body><section data-mw-section-id="0"></section></body></html>';
 	/**
 	 * The default document to create if a page was not found.
-	 *
 	 * @type {string}
 	 */
 	static defaultDocument = ParsoidDocument.blankDocument;
 
 	/**
 	 * The {@link Document} object of the iframe.
-	 *
 	 * @protected
 	 */
 	protected document: Document;
 	/**
-	 * The {@link JQuery} object of the iframe.
-	 *
+	 * The JQuery (window.$) object of the iframe.
 	 * @protected
 	 */
 	protected $document: JQuery<Document>;
 	/**
 	 * The frame element used by this ParsoidDocument instance.
-	 *
 	 * @protected
 	 */
 	protected iframe: HTMLIFrameElement;
 	/**
 	 * A MutationObserver that watches the document for DOM changes.
-	 *
 	 * @protected
 	 */
 	protected observer: MutationObserver;
 	/**
 	 * The page currently loaded.
-	 *
 	 * @protected
 	 */
 	protected page: string;
 	/**
 	 * A relative URI to the root of the RESTBase instance that the page was loaded from.
-	 *
 	 * @protected
 	 */
 	protected restBaseUri: string;
 	/**
 	 * The ETag of the loaded Parsoid document.
-	 *
 	 * @protected
 	 */
 	protected etag: string;
 	/**
 	 * `true` if the page exists on the wiki.
-	 *
 	 * @protected
 	 */
 	protected fromExisting: boolean;
@@ -436,16 +412,14 @@ class ParsoidDocument extends EventTarget {
 	/**
 	 * A set of element arrays indexed by their MediaWiki RDFa type. For example, this array
 	 * may include the key "Transclusion" from the RDFa type "mw:Transclusion".
-	 *
 	 * @protected
 	 */
 	protected elementIndex: { [key: string]: HTMLElement[] };
 
 	/**
 	 * Create a new ParsoidDocument instance from a page on-wiki.
-	 *
 	 * @param {string} page The page to load.
-	 * @param {Object} options Options for frame loading.
+	 * @param {object} options Options for frame loading.
 	 * @param {boolean} options.reload
 	 *   Whether the current page should be discarded and reloaded.
 	 * @param options.allowMissing
@@ -463,7 +437,6 @@ class ParsoidDocument extends EventTarget {
 
 	/**
 	 * Create a new ParsoidDocument instance from plain HTML.
-	 *
 	 * @param {string} page The name of the page.
 	 * @param {string} html The HTML to use.
 	 * @param restBaseUri The relative URI to the RESTBase instance to be used for transforms.
@@ -490,7 +463,6 @@ class ParsoidDocument extends EventTarget {
 
 	/**
 	 * Creates a new ParsoidDocument from a blank page.
-	 *
 	 * @param {string} page The name of the page.
 	 * @param restBaseUri
 	 */
@@ -503,7 +475,6 @@ class ParsoidDocument extends EventTarget {
 
 	/**
 	 * Creates a new ParsoidDocument from wikitext.
-	 *
 	 * @param {string} page The page of the document.
 	 * @param {string} wikitext The wikitext to load.
 	 * @param restBaseUri
@@ -516,7 +487,20 @@ class ParsoidDocument extends EventTarget {
 	}
 
 	/**
-	 * @return `true` if the page is a redirect. `false` if otherwise.
+	 * Get additional request options to be patched onto RESTBase API calls.
+	 * Extend this class to modify this.
+	 * @protected
+	 */
+	protected getRequestOptions(): Omit<RequestInit, 'body' | 'cache' | 'method'> {
+		return {
+			headers: {
+				'Api-User-Agent': 'parsoid-document/2.0.0 (https://github.com/ChlodAlejandro/parsoid-document; chlod@chlod.net)'
+			}
+		};
+	}
+
+	/**
+	 * @returns `true` if the page is a redirect. `false` if otherwise.
 	 */
 	get redirect(): boolean {
 		return this.document &&
@@ -547,7 +531,6 @@ class ParsoidDocument extends EventTarget {
 
 			/**
 			 * The document of this ParsoidDocument's IFrame.
-			 *
 			 * @type {Document}
 			 * @protected
 			 */
@@ -585,9 +568,8 @@ class ParsoidDocument extends EventTarget {
 
 	/**
 	 * Set up a JQuery object for this window.
-	 *
 	 * @param $doc The JQuery object to set up.
-	 * @return The JQuery object.
+	 * @returns The JQuery object.
 	 */
 	setupJquery( $doc: JQuery<Document> ): JQuery<Document> {
 		// noinspection JSPotentiallyInvalidConstructorUsage
@@ -605,9 +587,8 @@ class ParsoidDocument extends EventTarget {
 		$proto.parsoid = function () {
 			/**
 			 * Processes an element and extracts its transclusion parts.
-			 *
 			 * @param {HTMLElement} element Element to process.
-			 * @return The transclusion parts.
+			 * @returns The transclusion parts.
 			 */
 			function process(
 				element: HTMLElement
@@ -638,7 +619,6 @@ class ParsoidDocument extends EventTarget {
 
 	/**
 	 * Notify the user of a document loading error.
-	 *
 	 * @param {Error} error An error object.
 	 */
 	notifyLoadError( error: Error ): void {
@@ -664,10 +644,8 @@ class ParsoidDocument extends EventTarget {
 
 	/**
 	 * Loads a wiki page with this ParsoidDocument.
-	 *
 	 * @param {string} page The page to load.
-	 *
-	 * @param {Object} options Options for frame loading.
+	 * @param {object} options Options for frame loading.
 	 * @param {boolean} options.reload
 	 *   Whether the current page should be discarded and reloaded.
 	 * @param options.allowMissing
@@ -701,15 +679,16 @@ class ParsoidDocument extends EventTarget {
 			}&t=${
 				Date.now()
 			}`, Object.assign(
-				{}, {
+				{
 					cache: 'no-cache'
-				}, options.requestOptions ?? {}
+				},
+				this.getRequestOptions() ?? {},
+				options.requestOptions ?? {}
 			)
 		)
 			.then( ( data ) => {
 				/**
 				 * The ETag of this iframe's content.
-				 *
 				 * @type {string}
 				 */
 				this.etag = data.headers.get( 'ETag' );
@@ -731,7 +710,6 @@ class ParsoidDocument extends EventTarget {
 
 	/**
 	 * Load a document from wikitext.
-	 *
 	 * @param {string} page The page title of this document.
 	 * @param {string} wikitext The wikitext to load.
 	 * @param restBaseUri
@@ -743,8 +721,8 @@ class ParsoidDocument extends EventTarget {
 				encodeAPIComponent( page )
 			}?t=${
 				Date.now()
-			}`, {
-				cache: 'no-cache',
+			}`, Object.assign( this.getRequestOptions() ?? {}, {
+				cache: <RequestCache> 'no-cache',
 				method: 'POST',
 				body: ( (): FormData => {
 					const formData = new FormData();
@@ -752,12 +730,11 @@ class ParsoidDocument extends EventTarget {
 					formData.set( 'body_only', 'false' );
 					return formData;
 				} )()
-			}
+			} )
 		)
 			.then( ( data ) => {
 				/**
 				 * The ETag of this iframe's content.
-				 *
 				 * @type {string}
 				 */
 				this.etag = data.headers.get( 'ETag' );
@@ -771,7 +748,6 @@ class ParsoidDocument extends EventTarget {
 
 	/**
 	 * Load a document from HTML.
-	 *
 	 * @param {string} page The loaded page's name.
 	 * @param {string} html The page's HTML.
 	 * @param restBaseUri A relative or absolute URI to the wiki's RESTBase root.
@@ -864,9 +840,8 @@ class ParsoidDocument extends EventTarget {
 
 	/**
 	 * Gets the `<section>` HTMLElement given a section ID.
-	 *
 	 * @param id The ID of the section
-	 * @return The HTMLElement of the section. If the section cannot be found, `null`.
+	 * @returns The HTMLElement of the section. If the section cannot be found, `null`.
 	 */
 	getSection( id: number ): HTMLElement {
 		return this.document.querySelector( `section[data-mw-section-id="${id}"]` );
@@ -874,10 +849,9 @@ class ParsoidDocument extends EventTarget {
 
 	/**
 	 * Finds a template in the loaded document.
-	 *
 	 * @param {string|RegExp} templateName The name of the template to look for.
 	 * @param {boolean} hrefMode Use the href instead of the wikitext to search for templates.
-	 * @return {HTMLElement} A list of elements.
+	 * @returns {HTMLElement} A list of elements.
 	 */
 	findTemplate(
 		templateName: string | RegExp, hrefMode = false
@@ -929,11 +903,10 @@ class ParsoidDocument extends EventTarget {
 	/**
 	 * Finds the element with the "data-mw" attribute containing the element
 	 * passed into the function.
-	 *
 	 * @param {HTMLElement} element
 	 *   The element to find the parent of. This must be a member of the
 	 *   ParsoidDocument's document.
-	 * @return {HTMLElement} The element responsible for showing the given element.
+	 * @returns {HTMLElement} The element responsible for showing the given element.
 	 */
 	findParsoidNode( element: HTMLElement ): HTMLElement {
 		let pivot = element;
@@ -952,9 +925,8 @@ class ParsoidDocument extends EventTarget {
 	/**
 	 * Get HTML elements that are associated to a specific Parsoid node using its
 	 * `about` attribute.
-	 *
 	 * @param node The node to get the elements of
-	 * @return All elements that match the `about` of the given node.
+	 * @returns All elements that match the `about` of the given node.
 	 */
 	getNodeElements( node: HTMLElement | ParsoidTransclusionTemplateNode ): HTMLElement[] {
 		return Array.from(
@@ -971,7 +943,6 @@ class ParsoidDocument extends EventTarget {
 	 * Deletes all elements that have the same `about` attribute as the given element.
 	 * This effectively deletes an element, be it a transclusion set, file, section,
 	 * or otherwise.
-	 *
 	 * @param element
 	 */
 	destroyParsoidNode( element: HTMLElement ): void {
@@ -987,8 +958,7 @@ class ParsoidDocument extends EventTarget {
 
 	/**
 	 * Converts the contents of this document to wikitext.
-	 *
-	 * @return {Promise<string>} The wikitext of this document.
+	 * @returns {Promise<string>} The wikitext of this document.
 	 */
 	async toWikitext() {
 		// this.restBaseUri should be set.
@@ -1000,13 +970,15 @@ class ParsoidDocument extends EventTarget {
 				this.document.documentElement.getAttribute( 'about' )
 			)[ 1 ] )}`;
 		}
+		const requestOptions = this.getRequestOptions();
 		return fetch(
 			target,
-			{
+			Object.assign( requestOptions, {
 				method: 'POST',
-				headers: {
-					'If-Match': this.fromExisting ? this.etag : undefined
-				},
+				headers: Object.assign(
+					requestOptions.headers ?? {},
+					{ 'If-Match': this.fromExisting ? this.etag : undefined }
+				),
 				body: ( () => {
 					const data = new FormData();
 					data.set( 'html', this.document.documentElement.outerHTML );
@@ -1015,14 +987,13 @@ class ParsoidDocument extends EventTarget {
 
 					return data;
 				} )()
-			}
+			} )
 		).then( ( data ) => data.text() );
 	}
 
 	/**
 	 * Get the {@link Document} object of this ParsoidDocument.
-	 *
-	 * @return {Document} {@link ParsoidDocument#document}
+	 * @returns {Document} {@link ParsoidDocument#document}
 	 */
 	getDocument(): Document {
 		return this.document;
@@ -1030,8 +1001,7 @@ class ParsoidDocument extends EventTarget {
 
 	/**
 	 * Get the JQuery object associated with this ParsoidDocument.
-	 *
-	 * @return {*} {@link ParsoidDocument#$document}
+	 * @returns {*} {@link ParsoidDocument#$document}
 	 */
 	getJQuery(): JQuery<Document> {
 		return this.$document;
@@ -1039,8 +1009,7 @@ class ParsoidDocument extends EventTarget {
 
 	/**
 	 * Get the IFrame element of this ParsoidDocument.
-	 *
-	 * @return {HTMLIFrameElement} {@link ParsoidDocument#iframe}
+	 * @returns {HTMLIFrameElement} {@link ParsoidDocument#iframe}
 	 */
 	getIframe(): HTMLIFrameElement {
 		return this.iframe;
@@ -1048,8 +1017,7 @@ class ParsoidDocument extends EventTarget {
 
 	/**
 	 * Get the page name of the currently-loaded page.
-	 *
-	 * @return {string} {@link ParsoidDocument#page}
+	 * @returns {string} {@link ParsoidDocument#page}
 	 */
 	getPage(): string {
 		return this.page;
@@ -1057,8 +1025,7 @@ class ParsoidDocument extends EventTarget {
 
 	/**
 	 * Get the element index of this ParsoidDocument.
-	 *
-	 * @return {Object.<string, HTMLElement[]>} {@link ParsoidDocument#elementIndex}
+	 * @returns {{ [p: string]: HTMLElement[] }} {@link ParsoidDocument#elementIndex}
 	 */
 	getElementIndex(): { [p: string]: HTMLElement[] } {
 		return this.elementIndex;
@@ -1066,8 +1033,7 @@ class ParsoidDocument extends EventTarget {
 
 	/**
 	 * Check if this element exists on-wiki or not.
-	 *
-	 * @return {boolean} {@link ParsoidDocument#fromExisting}
+	 * @returns {boolean} {@link ParsoidDocument#fromExisting}
 	 */
 	isFromExisting(): boolean {
 		return this.fromExisting;
