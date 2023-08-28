@@ -10,7 +10,7 @@ MSYS2_ARG_CONV_EXCL="*"
 
 HASH=$(git rev-parse --short HEAD | xargs)
 PACKAGE_NAME=$(node -p -e "require('./package.json').name")
-PACKAGE_VERSION=$(node -p -e "/(.+?)-/.exec(require('./package.json').version)[1]")
+PACKAGE_VERSION=$(node -p -e "/^([^-]+)/.exec(require('./package.json').version)[1]")
 TARGET_VERSION="$PACKAGE_VERSION-$HASH"
 
 CURRENT_LATEST=$(npm dist-tag "$PACKAGE_NAME@latest" | xargs | sed 's/latest: //')
