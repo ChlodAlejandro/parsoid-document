@@ -52,7 +52,7 @@
         "jest-puppeteer": "^9.0.0",
         "puppeteer": "^21.0.1",
         "ts-jest": "^29.1.1",
-        "typedoc": "^0.24.8",
+        "typedoc": "^0.25.1",
         "typedoc-plugin-mdn-links": "^3.0.3",
         "typedoc-plugin-missing-exports": "^2.0.1",
         "typedoc-plugin-rename-defaults": "^0.6.5",
