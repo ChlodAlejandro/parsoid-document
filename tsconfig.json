@@ -1,6 +1,6 @@
 {
     "compilerOptions": {
-        "target": "ES2018",
+        "target": "es6",
         "lib": [ "dom", "ES2018" ],
         "outDir": "./build",
         "declaration": true,

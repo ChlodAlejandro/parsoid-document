@@ -36,9 +36,15 @@ const fs = require( 'fs' );
 	const browserJsFile = browserJsHeader.trim() +
 		'\n( () => {\n' +
 		moduleJsFile
+			// Strip everything before start
 			.replace( /[\s\S]*\/\/\s*ParsoidDocument:start\s*/, '' )
+			// Strip everything after end
 			.replace( /\s*\/\/\s*ParsoidDocument:end[\s\S]*/, '' )
+			// Remove the exports declaration line
+			.replace( /^Object\.defineProperty\(exports.+$/m, '' )
+			// Indent all by 1 tab
 			.replace( /^(.+)$/gm, '    $1' ) +
+		'\n' +
 		'\n    window.ParsoidDocument = ParsoidDocument;' +
 		'\n} )();\n' +
 		browserJsFooter.trim();

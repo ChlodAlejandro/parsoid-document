@@ -44,7 +44,9 @@ describe( 'English Wikipedia', () => {
 			expect( x48 ).toHaveProperty( 'parse.title' );
 			expect( x48 ).toHaveProperty( 'parse.pageid' );
 			expect( x48 ).toHaveProperty( 'parse.text' );
-			expect( x48.parse.text ).toBe( '<div class="mw-parser-output"></div>' );
+			expect( x48.parse.text ).toBe(
+				'<div class="mw-content-ltr mw-parser-output" lang="en" dir="ltr"></div>'
+			);
 		} );
 
 		test( 'X47 is blank when transcluded', async () => {
@@ -53,13 +55,22 @@ describe( 'English Wikipedia', () => {
 			expect( x47 ).toHaveProperty( 'parse.title' );
 			expect( x47 ).toHaveProperty( 'parse.pageid' );
 			expect( x47 ).toHaveProperty( 'parse.text' );
-			expect( x47.parse.text ).toBe( '<div class="mw-parser-output"></div>' );
+			expect( x47.parse.text ).toBe(
+				'<div class="mw-content-ltr mw-parser-output" lang="en" dir="ltr"></div>'
+			);
 		} );
 
 	} );
 
 	beforeAll( async () => {
 		jest.setTimeout( 10000 );
+
+		page
+			.on('console', message =>
+			console.log(`${message.type().substring(0, 3).toUpperCase()} ${message.text()}`))
+			.on('pageerror', ({ message }) => console.log(message))
+			.on('requestfailed', request =>
+				console.log(`${request.failure().errorText} ${request.url()}`));
 
 		await page.goto( 'https://en.wikipedia.org/wiki/Wikipedia:Sandbox' );
 		await page.addScriptTag( { path: './build/ParsoidDocument.js' } );
@@ -224,6 +235,8 @@ describe( 'English Wikipedia', () => {
 
 				template.setParameter( 'foo', '5' );
 				template.setParameter( 'bar', '6' );
+
+				console.log(doc.getDocument().documentElement.outerHTML);
 
 				return doc.toWikitext();
 			} ) ).toMatch( /foo\s*=\s*5\s*\|\s*bar\s*=\s*6/ );
