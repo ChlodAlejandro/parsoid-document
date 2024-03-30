@@ -394,6 +394,11 @@ class ParsoidDocument extends EventTarget {
 	 */
 	protected page: string;
 	/**
+	 * The current revision. Only set if `fromPage`/`loadPage` was used.
+	 * @protected
+	 */
+	protected revision: number;
+	/**
 	 * A relative URI to the root of the RESTBase instance that the page was loaded from.
 	 * @protected
 	 */
@@ -419,6 +424,7 @@ class ParsoidDocument extends EventTarget {
 	/**
 	 * Create a new ParsoidDocument instance from a page on-wiki.
 	 * @param {string} page The page to load.
+	 * @param {number} revision The revision ID of the page to load
 	 * @param {object} options Options for frame loading.
 	 * @param {boolean} options.reload
 	 *   Whether the current page should be discarded and reloaded.
@@ -427,10 +433,11 @@ class ParsoidDocument extends EventTarget {
 	 */
 	static async fromPage(
 		page: string,
-		options: Parameters<ParsoidDocument['loadPage']>[1] = {}
+		revision: number = null,
+		options: Parameters<ParsoidDocument['loadPage']>[2] = {}
 	): Promise<ParsoidDocument> {
 		const doc = new ParsoidDocument();
-		await doc.loadPage( page, options );
+		await doc.loadPage( page, revision, options );
 
 		return doc;
 	}
@@ -645,6 +652,7 @@ class ParsoidDocument extends EventTarget {
 	/**
 	 * Loads a wiki page with this ParsoidDocument.
 	 * @param {string} page The page to load.
+	 * @param {number} revision The revision ID of the page to load
 	 * @param {object} options Options for frame loading.
 	 * @param {boolean} options.reload
 	 *   Whether the current page should be discarded and reloaded.
@@ -659,7 +667,7 @@ class ParsoidDocument extends EventTarget {
 	 * @param options.followRedirects
 	 *   Whether to follow page redirects or not.
 	 */
-	async loadPage( page: string, options: {
+	async loadPage( page: string, revision: number = null, options: {
 		followRedirects?: boolean,
 		restBaseUri?: string,
 		reload?: boolean,
@@ -674,7 +682,7 @@ class ParsoidDocument extends EventTarget {
 		return fetch(
 			`${this.restBaseUri}v1/page/html/${
 				encodeAPIComponent( page )
-			}?stash=true&redirect=${
+			}${ revision ? `/${revision}` : "" }?stash=true&redirect=${
 				options.followRedirects !== false ? 'true' : 'false'
 			}&t=${
 				Date.now()
@@ -692,6 +700,7 @@ class ParsoidDocument extends EventTarget {
 				 * @type {string}
 				 */
 				this.etag = data.headers.get( 'ETag' );
+				this.revision = revision;
 
 				if ( data.status === 404 && options.allowMissing !== false ) {
 					this.fromExisting = false;
@@ -784,8 +793,10 @@ class ParsoidDocument extends EventTarget {
 	 */
 	async reload() {
 		const page = this.page;
+		const revision = this.revision;
 		this.page = undefined;
-		return this.loadPage( page, { reload: true } );
+		this.revision = undefined;
+		return this.loadPage( page, revision, { reload: true } );
 	}
 
 	/**
